@@ -1,0 +1,1007 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <title>Search Results</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <script src="/js/jquery-3.3.1.js"></script>
+  <script src="/js/popper.min.js"></script>
+  <script src="/js/bootstrap.min.js"></script>
+  <link href="css/hemlock.css" rel="stylesheet">
+  <script src="js/modal.js"></script>
+  <script src="js/showall.js"></script>
+  <script th:inline="javascript">
+    $(document).ready(function () {
+      $('[data-toggle="tooltip"]').tooltip();
+      $('#forgotpassword').submit(function (e) {
+        e.preventDefault();
+        var user = new Object();
+        user.email = $('#email').val();
+        console.log($('#email').val());
+        $.ajax({
+          type: 'POST',
+          url: '/forgotpassword',
+          data: JSON.stringify(user),
+          dataType: 'json',
+          contentType: 'application/json; charset=utf-8',
+          success: function (response) {
+            if (response.response == 'ERROR') {
+              alert('Error');
+            }
+            else {
+              alert('Email sent');
+            }
+          },
+          error: function (response) {
+            console.log(response);
+          }
+        });
+      });
+    });
+  </script>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-md navbar-light fixed-top">
+          <a class="navbar-brand" href="/">Hemlock</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item active dropdown">
+                <a class="nav-link active dropdown-toggle" id="dropdown01" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true"
+                  aria-expanded="false">Movies</a>
+                <div class="dropdown-menu" aria-labelledby="dropdown01">
+                  <a class="dropdown-item" href="/movies/opening">Opening This Week</a>
+                  <a class="dropdown-item" href="/movies/comingsoon">Coming Soon</a>
+                  <a class="dropdown-item" href="/movies/boxoffice">Top Box Office</a>
+                  <a class="dropdown-item" href="/movies/rated?page=1">Highest Rated</a>
+                  <a class="dropdown-item" href="/movies/awardwinners?page=1">Award Winners</a>
+                </div>
+              </li>
+              <li class="nav-item active dropdown">
+                <a class="nav-link active dropdown-toggle" id="dropdown02" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true"
+                  aria-expanded="false">TV Shows</a>
+                <div class="dropdown-menu" aria-labelledby="dropdown02">
+                  <a class="dropdown-item" href="/tv/newtv">New TV Shows Tonight</a>
+                  <a class="dropdown-item" href="/tv/rated?page=1">Top Rated</a>
+                  <a class="dropdown-item" href="/tv/fresh">Certified Fresh</a>
+                </div>
+              </li>
+              <li style="margin-left: 50px;">
+                <form action="/search" th:action="@{/search}" method="post" class="form-inline my-2 my-lg-0" th:object="${queryOption}">
+                  <select th:field="*{dropdown}" style="margin-right: 8px;">
+                    <option th:value="All">All</option>
+                    <option th:value="Movie">Movies</option>
+                    <option th:value="TV">TV Shows</option>
+                    <option th:value="Actor">Celebrities</option>
+                  </select>
+                  <input name="query" th:field="*{query}" class="form-control mr-sm-2" type="text" placeholder="Search" style="width: 500px"
+                    required>
+                  <button class="btn btn-outline my-2 my-sm-0" type="submit">
+                    <img class="img-responsive" src="images\search-icon.png">
+                  </button>
+                </form>
+              </li>
+            </ul>
+            <div th:if="${user.username == null}">
+              <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                  <a class="dropdown-toggle" href="#" data-toggle="dropdown">Log In
+                    <strong class="caret"></strong>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-right" style="padding: 15px; padding-bottom: 15px;">
+                    <form action="/login" th:action="@{/login}" th:object="${user}" method="post" accept-charset="UTF-8">
+                      <input id="user_username" style="margin-bottom: 15px;padding-left: 5px" type="text" name="user[username]" placeholder="Username"
+                        th:field="*{username}" size="30" />
+                      <input id="user_password" style="margin-bottom: 15px;padding-left: 5px" type="password" name="user[password]" placeholder="Password"
+                        th:field="*{password}" size="30" />
+                      <label style="display: inline-block; margin-right: 50px;" for="user_remember_me">
+                        <input type="checkbox"> Remember me
+                      </label>
+                      <br>
+                      <div class="container">
+                        <div class="row">
+                          <div class="col-12">
+                            <input class="btn btn-primary" style="clear: left; width: 100%; height: 32px; font-size: 13px; margin-bottom: 10px;" type="submit"
+                              name="commit" value="Log In" />
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-4">
+                            <a class="btn btn-success" href="/register" style=" display: inline-block; clear: right; height: 32px; font-size: 13px;"
+                              type="submit">Sign up</a>
+                          </div>
+                          <div class="col-8">
+                            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModalCenter" style=" display: inline-block; clear: right; height: 32px; font-size: 13px;width: 100%;">Forgot Password?
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div th:if="${user.username != null}">
+              <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                  <a class="dropdown-toggle" href="#" data-toggle="dropdown" style="padding-left: 8px;text-decoration: none;">
+                    <div class="media p-1 float-left">
+                      <img th:if="${user.picture}==null" src="images/profile.png" class="mr-1 mt-1 rounded-circle" style="width:30px;" />
+                      <img th:if="${user.picture}!=null" th:src="@{'data:image/jpeg;base64,'+${user.picture64}}" class="mr-1 mt-1 rounded-circle"
+                        style="width:30px;" />
+                    </div>
+                    <div th:text="${user.username}" style="display: inline-block; text-align: center;vertical-align: middle;line-height: 40px;"></div>
+                    <strong class="caret"></strong>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-right" style="padding: 15px; width: 190px;">
+                    <div class="row">
+                      <div class="col-5">
+                        <div class="media p-1 float-left">
+                          <img th:if="${user.picture}==null" src="images/profile.png" class="mr-1 mt-1 rounded-circle" style="width:60px;" />
+                          <img th:if="${user.picture}!=null" th:src="@{'data:image/jpeg;base64,'+${user.picture64}}" class="mr-1 mt-1 rounded-circle"
+                            style="width:60px;" />
+                        </div>
+                      </div>
+                      <div class="col-7">
+                        <div style="padding:5px; width: 100%;">
+                          <a th:href="@{/user(username=${user.username})}+'#watchlist'" style="font-size:15px; color:green">
+                            <b>Watchlist</b>
+                          </a>
+                          <a th:href="@{/user(username=${user.username})}+'#blacklist'" style="font-size:15px; color:red">
+                            <b>Blacklist</b>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                    <a th:href="@{/user(username=${user.username})}" style="text-decoration: none;">Profile</a>
+                    <br>
+                    <a href="/account" style="text-decoration: none;">Account Settings</a>
+                    <br>
+                    <div class="dropdown-divider"></div>
+                    <form action="/logout" method="post">
+                      <input class="btn btn-danger" style="clear: left; width: 100%; height: 32px; font-size: 13px;" type="submit" name="commit"
+                        value="Log Out" />
+                    </form>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Reset Password</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <input id="email" type="text" class="form-control" placeholder="Enter email">
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <form id="forgotpassword" method="POST">
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+  <div class="container" style="margin-top: 100px;">
+    <h4 th:text="(${displayMSize+displayTSize+displayPSize}) + ' Search Results for: ' + ${queryOptions.query}"></h4>
+    <br>
+    <div class="row p-3" style="background-color: white;">
+      <div class="col-3">
+        <div data-spy="scroll" data-target="#results">
+          <div class="row" th:if="${displayMSize}>0">
+            <div class="col-12">
+              <h3>Sort Movies By:</h3>
+              <label>
+                <input type="checkbox" class="radio" value="1" name="movie" /> Name</label>
+              <br>
+              <label>
+                <input type="checkbox" class="radio" value="2" name="movie" /> Rating</label>
+              <br>
+              <label>
+                <input type="checkbox" class="radio" value="3" name="movie" /> Release Date</label>
+              <br>
+              <label>
+                <input type="checkbox" class="radio" value="4" name="movie" /> Box Office</label>
+              <br>
+            </div>
+          </div>
+          <br>
+          <div class="row" th:if="${displayTSize}>0">
+            <div class="col-12">
+              <h3>Sort TV Shows By:</h3>
+              <label>
+                <input type="checkbox" class="radio" value="6" name="tv" /> Name</label>
+              <br>
+              <label>
+                <input type="checkbox" class="radio" value="7" name="tv" /> Rating</label>
+              <br>
+              <label>
+                <input type="checkbox" class="radio" value="8" name="tv" /> Release Date</label>
+              <br>
+            </div>
+          </div>
+          <br>
+          <div class="row" th:if="${displayPSize}>0">
+            <div class="col-12">
+              <h3>Sort Celebrities By:</h3>
+              <label>
+                <input type="checkbox" class="radio" value="5" name="people" /> Name</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        $("input:checkbox").on('click', function () {
+          var $box = $(this);
+          if ($box.is(":checked")) {
+            var group = "input:checkbox[name='" + $box.attr("name") + "']";
+            $(group).prop("checked", false);
+            $box.prop("checked", true);
+            if ($box.prop("value") == 1) {
+              $('#M').prop('hidden', true);
+              $('#Mname').prop('hidden', false);
+              $('#Mrate').prop('hidden', true);
+              $('#Mdate').prop('hidden', true);
+              $('#Mbox').prop('hidden', true);
+              $('#gM').prop('hidden', true);
+              $('#gMname').prop('hidden', false);
+              $('#gMrate').prop('hidden', true);
+              $('#gMdate').prop('hidden', true);
+              $('#gMbox').prop('hidden', true);
+            }
+            else if ($box.prop("value") == 2) {
+              $('#M').prop('hidden', true);
+              $('#Mname').prop('hidden', true);
+              $('#Mrate').prop('hidden', false);
+              $('#Mdate').prop('hidden', true);
+              $('#Mbox').prop('hidden', true);
+              $('#gM').prop('hidden', true);
+              $('#gMname').prop('hidden', true);
+              $('#gMrate').prop('hidden', false);
+              $('#gMdate').prop('hidden', true);
+              $('#gMbox').prop('hidden', true);
+            }
+            else if ($box.prop("value") == 3) {
+              $('#M').prop('hidden', true);
+              $('#Mname').prop('hidden', true);
+              $('#Mrate').prop('hidden', true);
+              $('#Mdate').prop('hidden', false);
+              $('#Mbox').prop('hidden', true);
+              $('#gM').prop('hidden', true);
+              $('#gMname').prop('hidden', true);
+              $('#gMrate').prop('hidden', true);
+              $('#gMdate').prop('hidden', false);
+              $('#gMbox').prop('hidden', true);
+            }
+            else if ($box.prop("value") == 4) {
+              $('#M').prop('hidden', true);
+              $('#Mname').prop('hidden', true);
+              $('#Mrate').prop('hidden', true);
+              $('#Mdate').prop('hidden', true);
+              $('#Mbox').prop('hidden', false);
+              $('#gM').prop('hidden', true);
+              $('#gMname').prop('hidden', true);
+              $('#gMrate').prop('hidden', true);
+              $('#gMdate').prop('hidden', true);
+              $('#gMbox').prop('hidden', false);
+            }
+            else if ($box.prop("value") == 5) {
+              $('#P').prop('hidden', true);
+              $('#Pname').prop('hidden', false);
+              $('#gP').prop('hidden', true);
+              $('#gPname').prop('hidden', false);
+            }
+            else if ($box.prop("value") == 6) {
+              $('#T').prop('hidden', true);
+              $('#Tname').prop('hidden', false);
+              $('#Trate').prop('hidden', true);
+              $('#Tdate').prop('hidden', true);
+              $('#gT').prop('hidden', true);
+              $('#gTname').prop('hidden', false);
+              $('#gTrate').prop('hidden', true);
+              $('#gTdate').prop('hidden', true);
+            }
+            else if ($box.prop("value") == 7) {
+              $('#T').prop('hidden', true);
+              $('#Tname').prop('hidden', true);
+              $('#Trate').prop('hidden', false);
+              $('#Tdate').prop('hidden', true);
+              $('#gT').prop('hidden', true);
+              $('#gTname').prop('hidden', true);
+              $('#gTrate').prop('hidden', false);
+              $('#gTdate').prop('hidden', true);
+            }
+            else if ($box.prop("value") == 8) {
+              $('#T').prop('hidden', true);
+              $('#Tname').prop('hidden', true);
+              $('#Trate').prop('hidden', true);
+              $('#Tdate').prop('hidden', false);
+              $('#gT').prop('hidden', true);
+              $('#gTname').prop('hidden', true);
+              $('#gTrate').prop('hidden', true);
+              $('#gTdate').prop('hidden', false);
+            }
+          } else {
+            $box.prop("checked", false);
+            if ($box.prop("value") < 5) {
+              $('#M').prop('hidden', false);
+              $('#Mname').prop('hidden', true);
+              $('#Mrate').prop('hidden', true);
+              $('#Mdate').prop('hidden', true);
+              $('#Mbox').prop('hidden', true);
+              $('#gM').prop('hidden', false);
+              $('#gMname').prop('hidden', true);
+              $('#gMrate').prop('hidden', true);
+              $('#gMdate').prop('hidden', true);
+              $('#gMbox').prop('hidden', true);
+            }
+            else if ($box.prop("value") > 5) {
+              $('#T').prop('hidden', false);
+              $('#Tname').prop('hidden', true);
+              $('#Trate').prop('hidden', true);
+              $('#Tdate').prop('hidden', true);
+              $('#gT').prop('hidden', false);
+              $('#gTname').prop('hidden', true);
+              $('#gTrate').prop('hidden', true);
+              $('#gTdate').prop('hidden', true);
+            }
+            else {
+              $('#P').prop('hidden', false);
+              $('#Pname').prop('hidden', true);
+              $('#gP').prop('hidden', false);
+              $('#gPname').prop('hidden', true);
+            }
+
+          }
+        });
+      </script>
+      <div class="col-9" id="results" th:if="${displayMSize+displayTSize+displayPSize}>0">
+        <ul class="nav nav-tabs justify-content-end" style="margin-bottom: 20px;">
+          <li class="nav-item">
+            <a class="nav-link active" id="list-tab" data-toggle="tab" href="#list" role="tab" aria-controls="list" aria-selected="true">
+              <img src="images/list.png" style="width:20px;height: 20px;">
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="grid-tab" data-toggle="tab" href="#grid" role="tab" aria-controls="grid" aria-selected="false">
+              <img src="images/grid.png" style="width:20px;height: 20px;">
+            </a>
+          </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+          <div class="tab-pane fade show active" id="list" role="tabpanel" aria-labelledby="list-tab">
+            <h3 th:if="${displayMSize}!=0">Movies</h3>
+            <ul class="list-unstyled" id="M">
+              <li class="media mb-2" th:each="movie : ${displayM}" th:if="${movieStat.index}<12">
+                <a th:href="@{/movie(id=${movie.id})}">
+                  <img class="mr-3 poster" style="width: 100px; height: 150px" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${movie.title}">
+                </a>
+                <div class="media-body">
+                  <h5 class="mt-0 mb-1">
+                    <a th:text="${movie.title}" th:href="@{/movie(id=${movie.id})}"></a>
+                  </h5>
+                  <p th:text="'Description: '+${movie.shortDesc}"></p>
+                  <div class="row">
+                    <small th:if="${movie.avgCriticRating}==null and ${movie.avgGenRating}==null">No Ratings Yet</small>
+                    <div class="col-3">
+                      <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}>60" src="images/criticfresh.png" style="height: 24px;">
+                      <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}<=60" src="images/criticrotten.png" style="height: 24px;">
+                      <small th:if="${movie.avgCriticRating}!=null" th:text="${movie.avgCriticRating}+'%'"></small>
+                    </div>
+                    <div class="col-3">
+                      <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}>60" src="images/like.png" style="height: 24px;">
+                      <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}<=60" src="images/dislike.png" style="height: 24px;">
+                      <small th:if="${movie.avgGenRating}!=null" th:text="${movie.avgGenRating}+'%'"></small>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <ul class="list-unstyled" hidden id="Mname">
+              <li class="media mb-2" th:each="movie : ${displayMname}" th:if="${movieStat.index}<12">
+                <a th:href="@{/movie(id=${movie.id})}">
+                  <img class="mr-3 poster" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${movie.title}">
+                </a>
+                <div class="media-body">
+                  <h5 class="mt-0 mb-1">
+                    <a th:text="${movie.title}" th:href="@{/movie(id=${movie.id})}"></a>
+                  </h5>
+                  <p th:text="'Description: '+${movie.shortDesc}"></p>
+                  <div class="row">
+                    <small th:if="${movie.avgCriticRating}==null and ${movie.avgGenRating}==null">No Ratings Yet</small>
+                    <div class="col-3">
+                      <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}>60" src="images/criticfresh.png" style="height: 24px;">
+                      <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}<=60" src="images/criticrotten.png" style="height: 24px;">
+                      <small th:if="${movie.avgCriticRating}!=null" th:text="${movie.avgCriticRating}+'%'"></small>
+                    </div>
+                    <div class="col-3">
+                      <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}>60" src="images/like.png" style="height: 24px;">
+                      <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}<=60" src="images/dislike.png" style="height: 24px;">
+                      <small th:if="${movie.avgGenRating}!=null" th:text="${movie.avgGenRating}+'%'"></small>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <ul class="list-unstyled" hidden id="Mrate">
+              <li class="media mb-2" th:each="movie : ${displayMrate}" th:if="${movieStat.index}<12">
+                <a th:href="@{/movie(id=${movie.id})}">
+                  <img class="mr-3 poster" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${movie.title}">
+                </a>
+                <div class="media-body">
+                  <h5 class="mt-0 mb-1">
+                    <a th:text="${movie.title}" th:href="@{/movie(id=${movie.id})}"></a>
+                  </h5>
+                  <p th:text="'Description: '+${movie.shortDesc}"></p>
+                  <div class="row">
+                    <small th:if="${movie.avgCriticRating}==null and ${movie.avgGenRating}==null">No Ratings Yet</small>
+                    <div class="col-3" style="justify-content: end">
+                      <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}>60" src="images/criticfresh.png" style="height: 24px;">
+                      <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}<=60" src="images/criticrotten.png" style="height: 24px;">
+                      <small th:if="${movie.avgCriticRating}!=null" th:text="${movie.avgCriticRating}+'%'"></small>
+                    </div>
+                    <div class="col-3">
+                      <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}>60" src="images/like.png" style="height: 24px;">
+                      <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}<=60" src="images/dislike.png" style="height: 24px;">
+                      <small th:if="${movie.avgGenRating}!=null" th:text="${movie.avgGenRating}+'%'"></small>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <ul class="list-unstyled" hidden id="Mdate">
+              <li class="media mb-2" th:each="movie : ${displayMdate}" th:if="${movieStat.index}<12">
+                <a th:href="@{/movie(id=${movie.id})}">
+                  <img class="mr-3 poster" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${movie.title}">
+                </a>
+                <div class="media-body">
+                  <h5 class="mt-0 mb-1">
+                    <a th:text="${movie.title}" th:href="@{/movie(id=${movie.id})}"></a>
+                  </h5>
+                  <p th:text="'Description: '+${movie.shortDesc}"></p>
+                  <div class="row">
+                    <small th:if="${movie.avgCriticRating}==null and ${movie.avgGenRating}==null">No Ratings Yet</small>
+                    <div class="col-3 justify-content-end">
+                      <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}>60" src="images/criticfresh.png" style="height: 24px;">
+                      <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}<=60" src="images/criticrotten.png" style="height: 24px;">
+                      <small th:if="${movie.avgCriticRating}!=null" th:text="${movie.avgCriticRating}+'%'"></small>
+                    </div>
+                    <div class="col-3">
+                      <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}>60" src="images/like.png" style="height: 24px;">
+                      <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}<=60" src="images/dislike.png" style="height: 24px;">
+                      <small th:if="${movie.avgGenRating}!=null" th:text="${movie.avgGenRating}+'%'"></small>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <ul class="list-unstyled" hidden id="Mbox">
+              <li class="media mb-2" th:each="movie : ${displayMbox}" th:if="${movieStat.index}<12">
+                <a th:href="@{/movie(id=${movie.id})}">
+                  <img class="mr-3 poster" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${movie.title}">
+                </a>
+                <div class="media-body">
+                  <h5 class="mt-0 mb-1">
+                    <a th:text="${movie.title}" th:href="@{/movie(id=${movie.id})}"></a>
+                  </h5>
+                  <p th:text="'Description: '+${movie.shortDesc}"></p>
+                  <div class="row">
+                    <small th:if="${movie.avgCriticRating}==null and ${movie.avgGenRating}==null">No Ratings Yet</small>
+                    <div class="col-3" style="justify-items: end">
+                      <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}>60" src="images/criticfresh.png" style="height: 24px;">
+                      <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}<=60" src="images/criticrotten.png" style="height: 24px;">
+                      <small th:if="${movie.avgCriticRating}!=null" th:text="${movie.avgCriticRating}+'%'"></small>
+                    </div>
+                    <div class="col-3">
+                      <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}>60" src="images/like.png" style="height: 24px;">
+                      <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}<=60" src="images/dislike.png" style="height: 24px;">
+                      <small th:if="${movie.avgGenRating}!=null" th:text="${movie.avgGenRating}+'%'"></small>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <div class="row" th:if="${displayMSize}>12">
+              <div class="col">
+              <form action="/allmovies" method="POST" th:action="@{/allmovies}" th:object="${queryOption}">
+                <input hidden th:value="${queryOptions.query}" name="query" th:field="*{query}" class="form-control mr-sm-2" type="text" placeholder="Search" style="width: 500px"
+                required>
+                <button class="btn btn-sm btn-outline-secondary float-right" type="submit">View All Movies Results</button>
+              </form>
+            </div>
+            </div>
+            <hr th:if=${displayMSize}!=0>
+            <h3 th:if="${displayTSize}!=0">TV Shows</h3>
+            <ul class="list-unstyled" id="T">
+              <li class="media mb-2" th:each="tv : ${displayT}" th:if="${tvStat.index}<12">
+                <a th:href="@{/tv(id=${tv.id})}">
+                  <img class="mr-3 poster" th:src="'images/TVShows/'+${tv.id}+'/poster.jpg'" th:alt="${tv.title}">
+                </a>
+                <div class="media-body">
+                  <h5 class="mt-0 mb-1">
+                    <a th:text="${tv.title}" th:href="@{/tv(id=${tv.id})}"></a>
+                  </h5>
+                  <p th:text="'Description: '+${tv.shortSummary}"></p>
+                  <div class="row">
+                    <small th:if="${tv.avgCriticRating}==null and ${tv.avgGenRating}==null">No Ratings Yet</small>
+                    <div class="col-3">
+                      <img th:if="${tv.avgCriticRating}!=null and ${tv.avgCriticRating}>60" src="images/criticfresh.png" style="height: 24px;">
+                      <img th:if="${tv.avgCriticRating}!=null and ${tv.avgCriticRating}<=60" src="images/criticrotten.png" style="height: 24px;">
+                      <small th:if="${tv.avgCriticRating}!=null" th:text="${tv.avgCriticRating}+'%'"></small>
+                    </div>
+                    <div class="col-3">
+                      <img th:if="${tv.avgGenRating}!=null and ${tv.avgGenRating}>60" src="images/like.png" style="height: 24px;">
+                      <img th:if="${tv.avgGenRating}!=null and ${tv.avgGenRating}<=60" src="images/dislike.png" style="height: 24px;">
+                      <small th:if="${tv.avgGenRating}!=null" th:text="${tv.avgGenRating}+'%'"></small>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <ul class="list-unstyled" hidden id="Tname">
+              <li class="media mb-2" th:each="tv : ${displayTname}" th:if="${tvStat.index}<12">
+                <a th:href="@{/tv(id=${tv.id})}">
+                  <img class="mr-3 poster" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${tv.title}">
+                </a>
+                <div class="media-body">
+                  <h5 class="mt-0 mb-1">
+                    <a th:text="${tv.title}" th:href="@{/tv(id=${tv.id})}"></a>
+                  </h5>
+                  <p th:text="'Description: '+${tv.shortSummary}"></p>
+                  <div class="row">
+                    <small th:if="${tv.avgCriticRating}==null and ${tv.avgGenRating}==null">No Ratings Yet</small>
+                    <div class="col-3">
+                      <img th:if="${tv.avgCriticRating}!=null and ${tv.avgCriticRating}>60" src="images/criticfresh.png" style="height: 24px;">
+                      <img th:if="${tv.avgCriticRating}!=null and ${tv.avgCriticRating}<=60" src="images/criticrotten.png" style="height: 24px;">
+                      <small th:if="${tv.avgCriticRating}!=null" th:text="${tv.avgCriticRating}+'%'"></small>
+                    </div>
+                    <div class="col-3">
+                      <img th:if="${tv.avgGenRating}!=null and ${tv.avgGenRating}>60" src="images/like.png" style="height: 24px;">
+                      <img th:if="${tv.avgGenRating}!=null and ${tv.avgGenRating}<=60" src="images/dislike.png" style="height: 24px;">
+                      <small th:if="${tv.avgGenRating}!=null" th:text="${tv.avgGenRating}+'%'"></small>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <ul class="list-unstyled" hidden id="Trate">
+              <li class="media mb-2" th:each="tv : ${displayTrate}" th:if="${tvStat.index}<12">
+                <a th:href="@{/tv(id=${tv.id})}">
+                  <img class="mr-3 poster" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${tv.title}">
+                </a>
+                <div class="media-body">
+                  <h5 class="mt-0 mb-1">
+                    <a th:text="${tv.title}" th:href="@{/tv(id=${tv.id})}"></a>
+                  </h5>
+                  <p th:text="'Description: '+${tv.shortSummary}"></p>
+                  <div class="row">
+                    <small th:if="${tv.avgCriticRating}==null and ${tv.avgGenRating}==null">No Ratings Yet</small>
+                    <div class="col-3">
+                      <img th:if="${tv.avgCriticRating}!=null and ${tv.avgCriticRating}>60" src="images/criticfresh.png" style="height: 24px;">
+                      <img th:if="${tv.avgCriticRating}!=null and ${tv.avgCriticRating}<=60" src="images/criticrotten.png" style="height: 24px;">
+                      <small th:if="${tv.avgCriticRating}!=null" th:text="${tv.avgCriticRating}+'%'"></small>
+                    </div>
+                    <div class="col-3">
+                      <img th:if="${tv.avgGenRating}!=null and ${tv.avgGenRating}>60" src="images/like.png" style="height: 24px;">
+                      <img th:if="${tv.avgGenRating}!=null and ${tv.avgGenRating}<=60" src="images/dislike.png" style="height: 24px;">
+                      <small th:if="${tv.avgGenRating}!=null" th:text="${tv.avgGenRating}+'%'"></small>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <ul class="list-unstyled" hidden id="Tdate">
+              <li class="media mb-2" th:each="tv : ${displayTdate}" th:if="${tvStat.index}<12">
+                <a th:href="@{/tv(id=${tv.id})}">
+                  <img class="mr-3 poster" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${tv.title}">
+                </a>
+                <div class="media-body">
+                  <h5 class="mt-0 mb-1">
+                    <a th:text="${tv.title}" th:href="@{/tv(id=${tv.id})}"></a>
+                  </h5>
+                  <p th:text="'Description: '+${tv.shortSummary}"></p>
+                  <div class="row">
+                    <small th:if="${tv.avgCriticRating}==null and ${tv.avgGenRating}==null">No Ratings Yet</small>
+                    <div class="col-3">
+                      <img th:if="${tv.avgCriticRating}!=null and ${tv.avgCriticRating}>60" src="images/criticfresh.png" style="height: 24px;">
+                      <img th:if="${tv.avgCriticRating}!=null and ${tv.avgCriticRating}<=60" src="images/criticrotten.png" style="height: 24px;">
+                      <small th:if="${tv.avgCriticRating}!=null" th:text="${tv.avgCriticRating}+'%'"></small>
+                    </div>
+                    <div class="col-3">
+                      <img th:if="${tv.avgGenRating}!=null and ${tv.avgGenRating}>60" src="images/like.png" style="height: 24px;">
+                      <img th:if="${tv.avgGenRating}!=null and ${tv.avgGenRating}<=60" src="images/dislike.png" style="height: 24px;">
+                      <small th:if="${tv.avgGenRating}!=null" th:text="${tv.avgGenRating}+'%'"></small>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <div class="row" th:if="${displayTSize}>12">
+              <div class="col">
+                <form th:action="@{/alltv}" th:object="${queryOption}" method="POST">
+                  <input hidden th:value="${queryOptions.query}" name="query" th:field="*{query}" class="form-control mr-sm-2" type="text" placeholder="Search" style="width: 500px"
+                required>
+                  <button class="btn btn-sm btn-outline-secondary float-right" type="submit">View All TV Shows Results</button>
+                </form>
+              </div>
+            </div>
+            <hr th:if=${displayTSize}!=0>
+            <h3 th:if="${displayPSize}!=0">Celebrities</h3>
+            <ul class="list-unstyled" id="P">
+              <li class="media mb-2" th:each="person : ${displayP}" th:if="${personStat.index}<12">
+                <a th:href="@{/actor(id=${person.id})}">
+                  <img class="mr-3 poster" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${person.personName}">
+                </a>
+                <div class="media-body">
+                  <h5 class="mt-0 mb-1">
+                    <a th:text="${person.personName}" th:href="@{/actor(id=${person.id})}"></a>
+                  </h5>
+                  <p th:if="${person.dob}!=null" th:text="'Date of birth: '+ ${#strings.toString(person.dob).substring(0,10)}"></p>
+                </div>
+              </li>
+            </ul>
+            <ul class="list-unstyled" hidden id="Pname">
+              <li class="media mb-2" th:each="person : ${displayPname}" th:if="${personStat.index}<12">
+                <a th:href="@{/actor(id=${person.id})}">
+                  <img class="mr-3 poster" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${person.personName}">
+                </a>
+                <div class="media-body">
+                  <h5 class="mt-0 mb-1">
+                    <a th:text="${person.personName}" th:href="@{/actor(id=${person.id})}"></a>
+                  </h5>
+                  <p th:text="'Date of birth: '+ ${person.dob}"></p>
+                </div>
+              </li>
+            </ul>
+            <div class="row" th:if="${displayPSize}>12">
+              <div class="col">
+                <form action="/allcelebrities" method="POST" th:action="@{/allcelebrities}" th:object="${queryOption}">
+                  <input hidden th:value="${queryOptions.query}" name="query" th:field="*{query}" class="form-control mr-sm-2" type="text" placeholder="Search" style="width: 500px"
+                required>
+                  <button class="btn btn-sm btn-outline-secondary float-right" type="submit">View All Celebrities Results</button>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="grid" role="tabpanel" aria-labelledby="grid-tab">
+            <h3 th:if="${displayMSize}!=0">Movies</h3>
+            <div class="card-deck" th:if="${displayMSize}!=0" id="gM">
+              <div class="col-3" th:each="movie : ${displayM}" th:if="${movieStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
+                <div class="card" style="margin-bottom:20px;">
+                  <a th:href="@{/movie(id=${movie.id})}">
+                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${movie.title}">
+                  </a>
+                  <div class="card-body">
+                    <h5 class="card-title" style="white-space: nowrap;overflow: hidden;">
+                      <a th:text="${movie.title}" th:href="@{/movie(id=${movie.id})}" data-toggle="tooltip" data-placement="top" th:title="${movie.title}"></a>
+                    </h5>
+                    <p class="card-text" th:text="${movie.shortDesc}"></p>
+                  </div>
+                  <div class="card-footer">
+                    <div class="row">
+                      <small th:if="${movie.avgCriticRating}==null and ${movie.avgGenRating}==null">No Ratings Yet</small>
+                      <div class="col-6 pl-1 pr-0">
+                        <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}>60" src="images/criticfresh.png" style="height: 24px;">
+                        <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}<=60" src="images/criticrotten.png" style="height: 24px;">
+                        <small th:if="${movie.avgCriticRating}!=null" th:text="${movie.avgCriticRating}+'%'"></small>
+                      </div>
+                      <div class="col-6 px-0">
+                        <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}>60" src="images/like.png" style="height: 24px;">
+                        <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}<=60" src="images/dislike.png" style="height: 24px;">
+                        <small th:if="${movie.avgGenRating}!=null" th:text="${movie.avgGenRating}+'%'"></small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-deck" th:if="${displayMSize}!=0" hidden id="gMname">
+              <div class="col-3" th:each="movie : ${displayMname}" th:if="${movieStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
+                <div class="card" style="margin-bottom:20px;">
+                  <a th:href="@{/movie(id=${movie.id})}">
+                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${movie.title}">
+                  </a>
+                  <div class="card-body">
+                    <h5 class="card-title" style="white-space: nowrap;overflow: hidden;">
+                      <a th:text="${movie.title}" th:href="@{/movie(id=${movie.id})}" data-toggle="tooltip" data-placement="top" th:title="${movie.title}"></a>
+                    </h5>
+                    <p class="card-text" th:text="${movie.shortDesc}"></p>
+                  </div>
+                  <div class="card-footer">
+                    <div class="row">
+                      <small th:if="${movie.avgCriticRating}==null and ${movie.avgGenRating}==null">No Ratings Yet</small>
+                      <div class="col-6 pl-1 pr-0">
+                        <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}>60" src="images/criticfresh.png" style="height: 24px;">
+                        <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}<=60" src="images/criticrotten.png" style="height: 24px;">
+                        <small th:if="${movie.avgCriticRating}!=null" th:text="${movie.avgCriticRating}+'%'"></small>
+                      </div>
+                      <div class="col-6 px-0">
+                        <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}>60" src="images/like.png" style="height: 24px;">
+                        <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}<=60" src="images/dislike.png" style="height: 24px;">
+                        <small th:if="${movie.avgGenRating}!=null" th:text="${movie.avgGenRating}+'%'"></small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-deck" th:if="${displayMSize}!=0" hidden id="gMrate">
+              <div class="col-3" th:each="movie : ${displayMrate}" th:if="${movieStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
+                <div class="card" style="margin-bottom:20px;">
+                  <a th:href="@{/movie(id=${movie.id})}">
+                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${movie.title}">
+                  </a>
+                  <div class="card-body">
+                    <h5 class="card-title" style="white-space: nowrap;overflow: hidden;">
+                      <a th:text="${movie.title}" th:href="@{/movie(id=${movie.id})}" data-toggle="tooltip" data-placement="top" th:title="${movie.title}"></a>
+                    </h5>
+                    <p class="card-text" th:text="${movie.shortDesc}"></p>
+                  </div>
+                  <div class="card-footer">
+                    <div class="row">
+                      <small th:if="${movie.avgCriticRating}==null and ${movie.avgGenRating}==null">No Ratings Yet</small>
+                      <div class="col-6 pl-1 pr-0">
+                        <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}>60" src="images/criticfresh.png" style="height: 24px;">
+                        <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}<=60" src="images/criticrotten.png" style="height: 24px;">
+                        <small th:if="${movie.avgCriticRating}!=null" th:text="${movie.avgCriticRating}+'%'"></small>
+                      </div>
+                      <div class="col-6 px-0">
+                        <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}>60" src="images/like.png" style="height: 24px;">
+                        <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}<=60" src="images/dislike.png" style="height: 24px;">
+                        <small th:if="${movie.avgGenRating}!=null" th:text="${movie.avgGenRating}+'%'"></small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-deck" th:if="${displayMSize}!=0" hidden id="gMdate">
+              <div class="col-3" th:each="movie : ${displayMdate}" th:if="${movieStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
+                <div class="card" style="margin-bottom:20px;">
+                  <a th:href="@{/movie(id=${movie.id})}">
+                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${movie.title}">
+                  </a>
+                  <div class="card-body">
+                    <h5 class="card-title" style="white-space: nowrap;overflow: hidden;">
+                      <a th:text="${movie.title}" th:href="@{/movie(id=${movie.id})}" data-toggle="tooltip" data-placement="top" th:title="${movie.title}"></a>
+                    </h5>
+                    <p class="card-text" th:text="${movie.shortDesc}"></p>
+                  </div>
+                  <div class="card-footer">
+                    <div class="row">
+                      <small th:if="${movie.avgCriticRating}==null and ${movie.avgGenRating}==null">No Ratings Yet</small>
+                      <div class="col-6 pl-1 pr-0">
+                        <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}>60" src="images/criticfresh.png" style="height: 24px;">
+                        <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}<=60" src="images/criticrotten.png" style="height: 24px;">
+                        <small th:if="${movie.avgCriticRating}!=null" th:text="${movie.avgCriticRating}+'%'"></small>
+                      </div>
+                      <div class="col-6 px-0">
+                        <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}>60" src="images/like.png" style="height: 24px;">
+                        <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}<=60" src="images/dislike.png" style="height: 24px;">
+                        <small th:if="${movie.avgGenRating}!=null" th:text="${movie.avgGenRating}+'%'"></small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-deck" th:if="${displayMSize}!=0" hidden id="gMbox">
+              <div class="col-3" th:each="movie : ${displayMbox}" th:if="${movieStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
+                <div class="card" style="margin-bottom:20px;">
+                  <a th:href="@{/movie(id=${movie.id})}">
+                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${movie.title}">
+                  </a>
+                  <div class="card-body">
+                    <h5 class="card-title" style="white-space: nowrap;overflow: hidden;">
+                      <a th:text="${movie.title}" th:href="@{/movie(id=${movie.id})}" data-toggle="tooltip" data-placement="top" th:title="${movie.title}"></a>
+                    </h5>
+                    <p class="card-text" th:text="${movie.shortDesc}"></p>
+                  </div>
+                  <div class="card-footer">
+                    <div class="row">
+                      <small th:if="${movie.avgCriticRating}==null and ${movie.avgGenRating}==null">No Ratings Yet</small>
+                      <div class="col-6 pl-1 pr-0">
+                        <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}>60" src="images/criticfresh.png" style="height: 24px;">
+                        <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}<=60" src="images/criticrotten.png" style="height: 24px;">
+                        <small th:if="${movie.avgCriticRating}!=null" th:text="${movie.avgCriticRating}+'%'"></small>
+                      </div>
+                      <div class="col-6 px-0">
+                        <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}>60" src="images/like.png" style="height: 24px;">
+                        <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}<=60" src="images/dislike.png" style="height: 24px;">
+                        <small th:if="${movie.avgGenRating}!=null" th:text="${movie.avgGenRating}+'%'"></small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row" th:if="${displayMSize}>12">
+              <div class="col">
+                <form action="/allmovies" method="POST" th:action="@{/allmovies}" th:object="${queryOption}">
+                  <input hidden th:value="${queryOptions.query}" name="query" th:field="*{query}" class="form-control mr-sm-2" type="text" placeholder="Search" style="width: 500px"
+                required>
+                  <button class="btn btn-sm btn-outline-secondary float-right" type="submit">View All Movies Results</button>
+                </form>
+              </div>
+            </div>
+            <hr th:if=${displayMSize}!=0>
+            <h3 th:if="${displayTSize}!=0">TV Shows</h3>
+            <div class="card-deck" th:if="${displayTSize}!=0" id="gT">
+              <div class="col-3" th:each="tv : ${displayT}" th:if="${tvStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
+                <div class="card" style="margin-bottom:20px;">
+                  <a th:href="@{/tv(id=${tv.id})}">
+                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${tv.title}">
+                  </a>
+                  <div class="card-body">
+                    <a th:href="@{/tv(id=${tv.id})}">
+                      <h5 class="card-title" style="white-space: nowrap;overflow: hidden;">
+                        <a th:text="${tv.title}" th:href="@{/tv(id=${tv.id})}" data-toggle="tooltip" data-placement="top" th:title="${tv.title}"></a>
+                      </h5>
+                    </a>
+                    <p class="card-text" th:text="${tv.shortSummary}"></p>
+                  </div>
+                  <div class="card-footer">
+                    <small class="text-dark" th:text="'Seasons: '+ ${tv.seasons}" style="float: right;"></small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-deck" th:if="${displayTSize}!=0" hidden id="gTname">
+              <div class="col-3" th:each="tv : ${displayTname}" th:if="${tvStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
+                <div class="card" style="margin-bottom:20px;">
+                  <a th:href="@{/tv(id=${tv.id})}">
+                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${tv.title}">
+                  </a>
+                  <div class="card-body">
+                    <h5 class="card-title" style="white-space: nowrap;overflow: hidden;">
+                      <a th:text="${tv.title}" th:href="@{/tv(id=${tv.id})}" data-toggle="tooltip" data-placement="top" th:title="${tv.title}"></a>
+                    </h5>
+                    <p class="card-text" th:text="${tv.shortSummary}"></p>
+                  </div>
+                  <div class="card-footer">
+                    <small class="text-dark" th:text="'Seasons: '+ ${tv.seasons}" style="float: right;"></small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-deck" th:if="${displayTSize}!=0" hidden id="gTrate">
+              <div class="col-3" th:each="tv : ${displayTrate}" th:if="${tvStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
+                <div class="card" style="margin-bottom:20px;">
+                  <a th:href="@{/tv(id=${tv.id})}">
+                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${tv.title}">
+                  </a>
+                  <div class="card-body">
+                    <h5 class="card-title" style="white-space: nowrap;overflow: hidden;">
+                      <a th:text="${tv.title}" th:href="@{/tv(id=${tv.id})}" data-toggle="tooltip" data-placement="top" th:title="${tv.title}"></a>
+                    </h5>
+                    <p class="card-text" th:text="${tv.shortSummary}"></p>
+                  </div>
+                  <div class="card-footer">
+                    <small class="text-dark" th:text="'Seasons: '+ ${tv.seasons}" style="float: right;"></small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-deck" th:if="${displayTSize}!=0" hidden id="gTdate">
+              <div class="col-3" th:each="tv : ${displayTdate}" th:if="${tvStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
+                <div class="card" style="margin-bottom:20px;">
+                  <a th:href="@{/tv(id=${tv.id})}">
+                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${tv.title}">
+                  </a>
+                  <div class="card-body">
+                    <h5 class="card-title" style="white-space: nowrap;overflow: hidden;">
+                      <a th:text="${tv.title}" th:href="@{/tv(id=${tv.id})}" data-toggle="tooltip" data-placement="top" th:title="${tv.title}"></a>
+                    </h5>
+                    <p class="card-text" th:text="${tv.shortSummary}"></p>
+                  </div>
+                  <div class="card-footer">
+                    <small class="text-dark" th:text="'Seasons: '+ ${tv.seasons}" style="float: right;"></small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row" th:if="${displayTSize}>12">
+              <div class="col">
+                <form action="/alltv" method="POST" th:action="@{/alltv}" th:object="${queryOption}">
+                  <input hidden th:value="${queryOptions.query}" name="query" th:field="*{query}" class="form-control mr-sm-2" type="text" placeholder="Search" style="width: 500px"
+                required>
+                  <button class="btn btn-sm btn-outline-secondary float-right" type="submit">View All TV Shows Results</button>
+                </form>
+              </div>
+            </div>
+            <hr th:if=${displayTSize}!=0>
+            <h3 th:if="${displayPSize}!=0">Celebrities</h3>
+            <div class="card-deck" th:if="${displayPSize}!=0" id="gP">
+              <div class="col-3" th:each="person : ${displayP}" th:if="${personStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
+                <div class="card" style="margin-bottom:20px;">
+                  <a th:href="@{/actor(id=${person.id})}">
+                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${person.personName}">
+                  </a>
+                  <div class="card-body" style="height: 175px;">
+                    <h5 class="card-title" style="white-space: nowrap;overflow: hidden;">
+                      <a data-toggle="tooltip" data-placement="top" th:title="${person.personName}" th:href="@{/actor(id=${person.id})}" th:text="${person.personName}"></a>
+                    </h5>
+                    <p class="card-text" th:text="${person.bio}"></p>
+                  </div>
+                  <div class="card-footer">
+                    <small class="text-dark float-right" th:if="${person.dob}!=null">Date of birth: </small>
+                    <small class="text-dark float-right" th:if="${person.dob}!=null" th:text="${#strings.toString(person.dob).substring(0,10)}"
+                      style="float: right;"></small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-deck" th:if="${displayPSize}!=0" hidden id="gPname">
+              <div class="col-3" th:each="person : ${displayPname}" th:if="${personStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
+                <div class="card" style="margin-bottom:20px;">
+                  <a th:href="@{/actor(id=${person.id})}">
+                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${person.personName}">
+                  </a>
+                  <div class="card-body" style="height: 175px;">
+                    <h5 class="card-title" style="white-space: nowrap;overflow: hidden;">
+                      <a data-toggle="tooltip" data-placement="top" th:title="${person.personName}" th:text="${person.personName}" th:href="@{/actor(id=${person.id})}"></a>
+                    </h5>
+                    <p class="card-text" th:text="${person.bio}"></p>
+                  </div>
+                  <div class="card-footer">
+                    <small class="text-dark float-right" th:if="${person.dob}!=null">Date of birth: </small>
+                    <small class="text-dark float-right" th:if="${person.dob}!=null" th:text="${#strings.toString(person.dob).substring(0,10)}"
+                      style="float: right;"></small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row" th:if="${displayPSize}>12">
+              <div class="col">
+                <form action="/allcelebrities" method="POST" th:action="@{/allcelebrities}" th:object="${queryOption}">
+                  <input hidden th:value="${queryOptions.query}" name="query" th:field="*{query}" class="form-control mr-sm-2" type="text" placeholder="Search" style="width: 500px"
+                required>
+                  <button class="btn btn-sm btn-outline-secondary float-right" type="submit">View All Celebrities Results</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+<footer class="container">
+    <br>
+    <br>
+    <p class="float-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p>&copy; 2018 Hemlock, Inc. &middot;
+      <a href="/terms">Terms and Conditions</a> &middot;
+      <a href="/about">About Us</a> &middot;
+      <a href="/contact">Contact Us</a> &middot;
+      <a href="/help">Help</a> &middot;
+      <a href="https://www.facebook.com/Hemlock-225751531511551/">
+        <img src="images/facebook.png">
+      </a>
+      <a href="https://twitter.com/308Hemlock">
+        <img src="images/twitter.png">
+      </a>
+      <a href="mailto:hemlockcse308@gmail.com">
+        <img src="images/gmail.png">
+      </a>
+    </p>
+  </footer>
+</html>

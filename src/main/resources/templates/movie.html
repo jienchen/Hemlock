@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <title th:title="${movie.title}"></title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <script src="js/jquery-3.3.1.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/modal.js"></script>
+  <link href="css/hemlock.css" rel="stylesheet">
+  <style>
+    .jumbotron {
+      margin-bottom: 0px;
+      padding-top: 100px;
+      position: relative;
+      background: #000 url("images/1.png") center center;
+      width: 100%;
+      height: 600px;
+      background-size: cover;
+      overflow: hidden;
+    }
+    .modal-dialog{
+      position: relative;
+      display: table; 
+      overflow-y: auto;    
+      overflow-x: auto;
+      width: auto;
+      min-width: 300px;   
+    }
+  </style>
+  <script th:inline="javascript">
+    $(document).ready(function () {
+      $('#forgotpassword').submit(function (e) {
+        e.preventDefault();
+        var user = new Object();
+        user.email = $('#email').val();
+        console.log($('#email').val());
+        $.ajax({
+          type: 'POST',
+          url: '/forgotpassword',
+          data: JSON.stringify(user),
+          dataType: 'json',
+          contentType: 'application/json; charset=utf-8',
+          success: function (response) {
+            if (response.response == 'ERROR') {
+              alert('Error');
+            }
+            else {
+              alert('Email sent');
+            }
+          },
+          error: function (response) {
+            console.log(response);
+          }
+        });
+      });
+    });
+  </script>
+  <script th:inline="javascript">
+    $(document).ready(function () {
+      $('[data-toggle="tooltip"]').tooltip();
+      $('#watchlist').submit(function (e) {
+        e.preventDefault();
+        var watchlist = new Object();
+        var ajaxURL = '';
+        watchlist.username = /*[[${user.username}]]*/ 'null';
+        watchlist.movieId = /*[[${movie.id}]]*/ '0';
+        if ($('#wlb').text() == "+ WatchList") {
+          ajaxURL = '/user/addwatchlist';
+        }
+        else if ($('#wlb').text() == "- WatchList") {
+          ajaxURL = '/user/removewatchlist';
+        }
+        $.ajax({
+          type: 'POST',
+          url: ajaxURL,
+          data: JSON.stringify(watchlist),
+          dataType: 'json',
+          contentType: 'application/json; charset=utf-8',
+          success: function (response) {
+            if (response.response == 'ERROR') {
+              $('#listModal').modal()
+            }
+            else if ($("#wlb").text() == '+ WatchList') {
+              $("#wlb").text('- WatchList');
+            }
+            else if ($("#wlb").text() == '- WatchList') {
+              $("#wlb").text('+ WatchList');
+            }
+          },
+          error: function (response) {
+            console.log(response);
+          }
+        });
+      });
+      $('#blacklist').submit(function (e) {
+        e.preventDefault();
+        var blacklist = new Object();
+        var ajaxURL = '';
+        blacklist.username = /*[[${user.username}]]*/ 'null';
+        blacklist.movieId = /*[[${movie.id}]]*/ '0';
+        if ($('#blb').text() == "+ BlackList") {
+          ajaxURL = '/user/addblacklist';
+        }
+        else if ($('#blb').text() == "- BlackList") {
+          ajaxURL = '/user/removeblacklist';
+        }
+        $.ajax({
+          type: 'POST',
+          url: ajaxURL,
+          data: JSON.stringify(blacklist),
+          dataType: 'json',
+          contentType: 'application/json; charset=utf-8',
+          success: function (response) {
+            if (response.response == 'ERROR') {
+              alert("You must be logged in to edit your BlackList.");
+            }
+            else if ($("#blb").text() == '+ BlackList') {
+              $("#blb").text('- BlackList');
+            }
+            else if ($("#blb").text() == '- BlackList') {
+              $("#blb").text('+ BlackList');
+            }
+          },
+          error: function (response) {
+            console.log(response);
+          }
+        });
+      });
+      $('#rateForm').submit(function (e) {
+        e.preventDefault();
+        var review = new Object();
+        review.username = /*[[${user.username}]]*/ 'null';
+        review.movieId = /*[[${movie.id}]]*/ '0';
+        review.rating = $('.rating input:checked').prop('value');
+        review.body = $('textarea').val();
+        review.date = Date.now() / 1000;
+        review.movieTitle = /*[[${movie.title}]]*/ 'null';
+        if ($(document.activeElement).text() == "Post Review") {
+          $.ajax({
+            type: 'POST',
+            url: '/movie/postreview',
+            data: JSON.stringify(review),
+            dataType: 'json',
+            contentType: 'application/json; charset=utf-8',
+            success: function (response) {
+              if (response.response == 'ERROR') {
+                alert("You must be logged in to leave a review.");
+              }
+              else if (response.response == 'BAD WORD') {
+                alert("Profanity detected.");
+              }
+              else {
+                $("textarea").prop('disabled', true);
+                $("fieldset").prop('disabled', true);
+                $("#post").attr('hidden', true);
+                $("#edit").attr('hidden', false);
+                $("#delete").attr('hidden', false);
+                $("#rateBoxTitle").text("My Review");
+              }
+            },
+            error: function (response) {
+              console.log(response);
+            }
+          });
+        }
+        else if ($(document.activeElement).text() == "Save Changes") {
+          $.ajax({
+            type: 'POST',
+            url: '/movie/editreview',
+            data: JSON.stringify(review),
+            dataType: 'json',
+            contentType: 'application/json; charset=utf-8',
+            success: function (response) {
+              if (response.response == 'ERROR') {
+                alert("You must be logged in to leave a review.");
+              }
+              else if (response.response == 'BAD WORD') {
+                alert("Profanity detected.");
+              }
+              else {
+                $("textarea").prop('disabled', true);
+                $("fieldset").prop('disabled', true);
+                $("#post").attr('hidden', true);
+                $("#edit").text('Edit Review');
+                $("#delete").attr('hidden', false);
+              }
+            },
+            error: function (response) {
+              console.log(response);
+            }
+          });
+        }
+        else if ($(document.activeElement).text() == "Delete Review") {
+          $.ajax({
+            type: 'POST',
+            url: '/movie/deletereview',
+            data: JSON.stringify(review),
+            dataType: 'json',
+            contentType: 'application/json; charset=utf-8',
+            success: function (response) {
+              if (response.response == 'ERROR') {
+                alert("Review was unable to be deleted.");
+              }
+              else {
+                $("textarea").prop('disabled', false);
+                $("textarea").val('');
+                $("textarea").attr('placeholder', 'Leave a review... (Optional)');
+                $("fieldset").prop('disabled', false);
+                $("#post").attr('hidden', false);
+                $("#edit").attr('hidden', true);
+                $("#delete").attr('hidden', true);
+                $('.rating input').prop('checked', false);
+                $('#post').prop('disabled', true);
+                $("#rateBoxTitle").text("My Review");
+              }
+            },
+            error: function (response) {
+              console.log(response);
+            }
+          });
+        }
+        else if ($(document.activeElement).text() == "Edit Review") {
+          $("textarea").prop('disabled', false);
+          $("#edit").text('Save Changes');
+        }
+      });
+      $('.report').click(function (e) {
+        e.preventDefault();
+        var report = new Object();
+        report.username = $(this).attr('id');
+        report.movieId = /*[[${movie.id}]]*/ '0';
+        $.ajax({
+          type: 'POST',
+          url: '/movie/reportreview',
+          data: JSON.stringify(report),
+          dataType: 'json',
+          contentType: 'application/json; charset=utf-8',
+          success: function (response) {
+            if (response.response == 'ERROR') {
+              alert('Report already submitted');
+            }
+            else {
+              alert('Report submitted');
+            }
+          },
+          error: function (response) {
+            console.log(response);
+          }
+        });
+      });
+      $('.rating input').click(function (e) {
+        $('#post').prop('disabled', false);
+      });
+    });
+  </script>
+  <script th:inline="javascript">
+    $(document).ready(function () {
+      var all = /*[[${movie.avgRating}]]*/'–';
+      var crit = /*[[${movie.avgCriticRating}]]*/'–';
+      var gen = /*[[${movie.avgGenRating}]]*/'–';
+      if (all == null || all == 0) {
+        all = '–';
+        crit = '–';
+        gen = '–';
+      }
+      else {
+        all += "%";
+        if (crit == null || crit == 0) { crit = '–'; }
+        else { crit += "%"; }
+        if (gen == null || gen == 0) { gen = '–'; }
+        else { gen += "%" }
+      }
+
+      $("#rating").text(all);
+      $('#all').mouseenter(function () {
+        $("#rating").text(all);
+      });
+      $('#crit').mouseenter(function () {
+        $('#rating').text(crit);
+      });
+      $('#gen').mouseenter(function () {
+        $('#rating').text(gen);
+      });
+      $('#rateRadio').mouseleave(function () {
+        if ($('#all').hasClass('active')) {
+          $('#rating').text(all);
+        }
+        else if ($('#crit').hasClass('active')) {
+          $('#rating').text(crit);
+        }
+        else {
+          $('#rating').text(gen);
+        }
+      });
+      $('#rateRadio').on('click', '.btn', function () {
+        $('.btn.active').removeClass('active');
+        $(this).addClass('active');
+      });
+    });
+  </script>
+  <script type="text/javascript">
+    $(document).ready(function () {
+      var url = $("#trailer").attr('src');
+      $("#myModal").on('hide.bs.modal', function () {
+        $("#trailer").attr('src', '');
+      });
+      $("#myModal").on('show.bs.modal', function () {
+        $("#trailer").attr('src', url);
+      });
+    });
+  </script>
+</head>
+
+<body data-spy="scroll" data-target=".navbar" data-offset="50">
+    <header>
+        <nav class="navbar navbar-expand-md navbar-light fixed-top">
+          <a class="navbar-brand" href="/">Hemlock</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item active dropdown">
+                <a class="nav-link active dropdown-toggle" id="dropdown01" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true"
+                  aria-expanded="false">Movies</a>
+                <div class="dropdown-menu" aria-labelledby="dropdown01">
+                  <a class="dropdown-item" href="/movies/opening">Opening This Week</a>
+                  <a class="dropdown-item" href="/movies/comingsoon">Coming Soon</a>
+                  <a class="dropdown-item" href="/movies/boxoffice">Top Box Office</a>
+                  <a class="dropdown-item" href="/movies/rated?page=1">Highest Rated</a>
+                  <a class="dropdown-item" href="/movies/awardwinners?page=1">Award Winners</a>
+                </div>
+              </li>
+              <li class="nav-item active dropdown">
+                <a class="nav-link active dropdown-toggle" id="dropdown02" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true"
+                  aria-expanded="false">TV Shows</a>
+                <div class="dropdown-menu" aria-labelledby="dropdown02">
+                  <a class="dropdown-item" href="/tv/newtv">New TV Shows Tonight</a>
+                  <a class="dropdown-item" href="/tv/rated?page=1">Top Rated</a>
+                  <a class="dropdown-item" href="/tv/fresh">Certified Fresh</a>
+                </div>
+              </li>
+              <li style="margin-left: 50px;">
+                <form action="/search" th:action="@{/search}" method="post" class="form-inline my-2 my-lg-0" th:object="${queryOption}">
+                  <select th:field="*{dropdown}" style="margin-right: 8px;">
+                    <option th:value="All">All</option>
+                    <option th:value="Movie">Movies</option>
+                    <option th:value="TV">TV Shows</option>
+                    <option th:value="Actor">Celebrities</option>
+                  </select>
+                  <input name="query" th:field="*{query}" class="form-control mr-sm-2" type="text" placeholder="Search" style="width: 500px"
+                    required>
+                  <button class="btn btn-outline my-2 my-sm-0" type="submit">
+                    <img class="img-responsive" src="images\search-icon.png">
+                  </button>
+                </form>
+              </li>
+            </ul>
+            <div th:if="${user.username == null}">
+              <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                  <a class="dropdown-toggle" href="#" data-toggle="dropdown">Log In
+                    <strong class="caret"></strong>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-right" style="padding: 15px; padding-bottom: 15px;">
+                    <form action="/login" th:action="@{/login}" th:object="${user}" method="post" accept-charset="UTF-8">
+                      <input id="user_username" style="margin-bottom: 15px;padding-left: 5px" type="text" name="user[username]" placeholder="Username"
+                        th:field="*{username}" size="30" />
+                      <input id="user_password" style="margin-bottom: 15px;padding-left: 5px" type="password" name="user[password]" placeholder="Password"
+                        th:field="*{password}" size="30" />
+                      <label style="display: inline-block; margin-right: 50px;" for="user_remember_me">
+                        <input type="checkbox"> Remember me
+                      </label>
+                      <br>
+                      <div class="container">
+                        <div class="row">
+                          <div class="col-12">
+                            <input class="btn btn-primary" style="clear: left; width: 100%; height: 32px; font-size: 13px; margin-bottom: 10px;" type="submit"
+                              name="commit" value="Log In" />
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-4">
+                            <a class="btn btn-success" href="/register" style=" display: inline-block; clear: right; height: 32px; font-size: 13px;"
+                              type="submit">Sign up</a>
+                          </div>
+                          <div class="col-8">
+                            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModalCenter" style=" display: inline-block; clear: right; height: 32px; font-size: 13px;width: 100%;">Forgot Password?
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div th:if="${user.username != null}">
+              <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                  <a class="dropdown-toggle" href="#" data-toggle="dropdown" style="padding-left: 8px;text-decoration: none;">
+                    <div class="media p-1 float-left">
+                      <img th:if="${user.picture}==null" src="images/profile.png" class="mr-1 mt-1 rounded-circle" style="width:30px;" />
+                      <img th:if="${user.picture}!=null" th:src="@{'data:image/jpeg;base64,'+${user.picture64}}" class="mr-1 mt-1 rounded-circle"
+                        style="width:30px;" />
+                    </div>
+                    <div th:text="${user.username}" style="display: inline-block; text-align: center;vertical-align: middle;line-height: 40px;"></div>
+                    <strong class="caret"></strong>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-right" style="padding: 15px; width: 190px;">
+                    <div class="row">
+                      <div class="col-5">
+                        <div class="media p-1 float-left">
+                          <img th:if="${user.picture}==null" src="images/profile.png" class="mr-1 mt-1 rounded-circle" style="width:60px;" />
+                          <img th:if="${user.picture}!=null" th:src="@{'data:image/jpeg;base64,'+${user.picture64}}" class="mr-1 mt-1 rounded-circle"
+                            style="width:60px;" />
+                        </div>
+                      </div>
+                      <div class="col-7">
+                        <div style="padding:5px; width: 100%;">
+                          <a th:href="@{/user(username=${user.username})}+'#watchlist'" style="font-size:15px; color:green">
+                            <b>Watchlist</b>
+                          </a>
+                          <a th:href="@{/user(username=${user.username})}+'#blacklist'" style="font-size:15px; color:red">
+                            <b>Blacklist</b>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                    <a th:href="@{/user(username=${user.username})}" style="text-decoration: none;">Profile</a>
+                    <br>
+                    <a href="/account" style="text-decoration: none;">Account Settings</a>
+                    <br>
+                    <div class="dropdown-divider"></div>
+                    <form action="/logout" method="post">
+                      <input class="btn btn-danger" style="clear: left; width: 100%; height: 32px; font-size: 13px;" type="submit" name="commit"
+                        value="Log Out" />
+                    </form>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Reset Password</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <input id="email" type="text" class="form-control" placeholder="Enter email">
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <form id="forgotpassword" method="POST">
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+  <div class="jumbotron">
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <p>
+      <a th:if="${movie.id}<2027 or ${movie.id}>2035" class="btn btn-lg btn-primary float-right" href="#" role="button">Play Trailer</a>
+      <a th:if="${movie.id}>=2027 and ${movie.id}<=2035" href="#myModal" class="btn btn-lg btn-primary float-right" data-toggle="modal">Play Trailer</a>
+      <div id="myModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-body">
+              <iframe id="trailer" width="100%" height="100%" th:src="'Trailers/'+${movie.id}+'.mp4'" frameborder="0" allowfullscreen></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p>
+  </div>
+
+  <div class="container" style="margin-top: 25px;">
+    <div class="row align-items-center">
+      <div class="col-9">
+        <h1 th:text="${movie.title}">
+        </h1>
+      </div>
+      <div class="col-3">
+        <div class="btn-group" th:if="${user.username}!=null">
+          <form id="watchlist" method="post">
+            <button class="btn btn-success" id="wlb" type="submit" th:if="!${movie.watchBool}">+ WatchList</button>
+            <button class="btn btn-success" id="wlb" type="submit" th:if="${movie.watchBool}">- WatchList</button>
+          </form>
+          <form id="blacklist" method="post">
+            <button class="btn btn-danger" id="blb" type="submit" style="margin-left: 1em;" th:if="!${movie.blackBool}">+ BlackList</button>
+            <button class="btn btn-danger" id="blb" type="submit" style="margin-left: 1em;" th:if="${movie.blackBool}">- BlackList</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <br>
+    <div class="row">
+      <div class="col-8">
+        <div class="card card-body bg-light">
+          <h3>Movie Info</h3>
+          <p th:text="${movie.description}"></p>
+          <div class="row">
+            <div class="col-1">
+            </div>
+            <div class="col-3">
+              <b th:if="${movie.mpaaRating}!='NOT RATED'">MPAA Rating: </b>
+              <br th:if="${movie.mpaaRating}!='NOT RATED'">
+              <b>Genres: </b>
+              <br>
+              <b>Directed By: </b>
+              <br>
+              <b>Written By: </b>
+              <br>
+              <b th:if="${movie.releaseDate}!=null">In Theaters: </b>
+              <br>
+              <b th:if="${movie.boxOffice}>0">Box Office: </b>
+              <br th:if="${movie.boxOffice}>0">
+              <b>Runtime: </b>
+            </div>
+            <div class="col-8">
+              <a th:text="${movie.mpaaRating}" th:if="${movie.mpaaRating}!='NOT RATED'"></a>
+              <br th:if="${movie.mpaaRating}!='NOT RATED'">
+              <a th:text="${movie.genres}"></a>
+              <br>
+              <a th:text="${movie.director}"></a>
+              <br>
+              <a th:text="${movie.writers}"></a>
+              <br>
+              <a th:if="${movie.releaseDate}!=null" th:text="${movie.releaseDate}"></a>
+              <br>
+              <a th:if="(${movie.boxOffice}>=100000)" th:text="'$'+${#numbers.formatDecimal(movie.boxOffice/1000000.0,1,1)}+'M'"></a>
+              <a th:if="(${movie.boxOffice}<100000 and ${movie.boxOffice}>=1000)" th:text="'$'+${#numbers.formatDecimal(movie.boxOffice/1000.0,1,2)}+'k'"></a>
+              <a th:if="(${movie.boxOffice}<1000 and ${movie.boxOffice}>0)" th:text="'$'+${movie.boxOffice}"></a>
+              <br th:if="${movie.boxOffice}>0">
+              <a th:text="${movie.runtime}"></a>
+            </div>
+          </div>
+        </div>
+        <br>
+
+        <div class="card card-body bg-light">
+          <h3>Photos</h3>
+          <div class="row" style="margin: auto;">
+            <div id="myCarousel" class="carousel slide" data-ride="carousel">
+              <ol class="carousel-indicators">
+                <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                <li data-target="#myCarousel" data-slide-to="1"></li>
+                <li data-target="#myCarousel" data-slide-to="2"></li>
+              </ol>
+              <div class="carousel-inner">
+                <div class="carousel-item active">
+                  <div class="row">
+                    <div class="col-md-4">
+                      <class="thumbnail">
+                        <img th:src="'images/Movies/'+${movie.id}+'/G0.jpg'" class="img-responsive photo" width="200px" height="150px">
+                    </div>
+                    <div class="col-md-4">
+                      <class="thumbnail">
+                        <img th:src="'images/Movies/'+${movie.id}+'/G1.jpg'" class="img-responsive photo" width="200px" height="150px">
+                    </div>
+                    <div class="col-md-4">
+                      <class="thumbnail">
+                        <img th:src="'images/Movies/'+${movie.id}+'/G2.jpg'" class="img-responsive photo" width="200px" height="150px">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <a class="carousel-control-prev" href="#myCarousel" role="button" data-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#myCarousel" role="button" data-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="sr-only">Next</span>
+            </a>
+            <div class="modal fade" id="photoModal">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h4 class="modal-title" th:text="${movie.title}"></h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                  </div>
+                  <div class="modal-body">
+                    <img class="img-responsive modalImg">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <br>
+          <a class="btn btn-sm btn-outline-secondary" href="/gallery" style=" display: inline-block; clear: right; height: 32px; font-size: 13px;">View All</a>
+        </div>
+        <br>
+        <div class="card card-body bg-light">
+          <h3>Reviews</h3>
+          <br>
+          <div class="card card-body">
+            <div class="row" th:if="${displaySize}==0">
+              <p style="margin-left:20px;">No reviews posted.</p>
+            </div>
+            <div class="row" th:each="review : ${display}" th:if="${displaySize}!=0">
+              <div class="col-12">
+                <div class="media border p-3">
+                  <img th:each="pic : ${pics}" th:if="${review.username}==${pic.username} and ${pic.picture}==null" src="../images/profile.png"
+                    th:alt="${review.username}" class="align-self-start mr-3 mt-3 rounded-circle" style="width:60px;" />
+                  <img th:each="pic : ${pics}" th:if="${review.username}==${pic.username} and ${pic.picture}!=null" th:src="@{'data:image/jpeg;base64,'+${pic.picture64}}"
+                    th:alt="${review.username}" class="align-self-start mr-3 mt-3 rounded-circle" style="width:60px;" />
+                  <div class="media-body">
+                    <div class="row">
+                      <div class="col-5">
+                          <h4><a th:href="@{/user(username=${review.username})}" th:text="${review.username}"></a></h4>
+                      </div>
+                      <div class="col-5">
+                        <p th:each="time : ${times}" th:if="${time.personName}==${review.username}" th:text="'Posted on '+${time.bio}"></p>
+                      </div>
+                      <div class="col-2">
+                        <p th:text="${review.rating}+'/5 stars'"></p>
+                      </div>
+                    </div>
+                    <p th:text="${review.body}"></p>
+                    <a href="javascript:void(0);">
+                      <span th:id="${review.username}" th:if="${user.username}!=null" class="badge badge-pill badge-secondary report float-right"
+                        data-toggle="tooltip" data-placement="top" title="Report this review!">!</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <br>
+          <button type="button" class="btn btn-sm btn-outline-secondary" th:if="${displaySize}!=0">View All Reviews</button>
+        </div>
+      </div>
+
+      <div class="col-4">
+        <div class="card card-body bg-light align-items-center">
+          <h3>Rating</h3>
+          <h1 id="rating"></h1>
+          <div data-toggle="buttons" id="rateRadio">
+            <div class="btn-group btn-group-toggle d-flex">
+              <a class="btn btn-light active" id="all">
+                <input type="radio" autocomplete="off" checked>All Ratings</a>
+              <a class="btn btn-light" id="crit">
+                <input type="radio" autocomplete="off">Critics Rating</a>
+            </div>
+            <div class="btn-group btn-group-toggle" style="width: 100%">
+              <a class="btn btn-light" style="width: 100%;" id="gen">
+                <input type="radio" autocomplete="off">General Rating</a>
+            </div>
+          </div>
+        </div>
+        <br>
+        <div class="card card-body bg-light">
+          <h3>Cast</h3>
+          <div class="card-block" th:each="info : ${person}" th:if="${infoStat.index}<4">
+            <div style="float:left;padding-right:30px;">
+              <a th:href="@{/actor(id=${info.id})}">
+                <img class="img-responsive poster" th:src="'images/People/'+${info.personName}+'/profile.jpg'">
+              </a>
+            </div>
+            <div>
+              <a th:href="@{/actor(id=${info.id})}" th:text="${info.personName}"></a>
+              <br>
+              <div th:each="role : ${cast}" th:if="${roleStat.index}<4 and ${roleStat.index}==${infoStat.index}">
+                <small th:text="'as ' + ${role.role}"></small>
+              </div>
+            </div>
+            <br>
+          </div>
+          <br>
+          <button type="button" class="btn btn-sm btn-outline-secondary" th:if="${castSize}<5">View All Cast</button>
+        </div>
+
+        <br>
+
+        <div class="card card-body bg-light d-flex flex-column">
+          <strong class="d-inline-block mb-2 text-primary" id="rateBoxTitle" th:if="${myreview}==null">Rate</strong>
+          <strong class="d-inline-block mb-2 text-primary" id="rateBoxTitle" th:if="${myreview}!=null">My Review</strong>
+          <h3 class="mb-0">
+            <a class="text-dark" th:text="${movie.title}"></a>
+          </h3>
+          <div class="detailBox">
+            <fieldset class="rating" th:if="${myreview}!=null">
+              <input type="radio" id="star5" name="rating" value="5" th:checked="${myreview.rating}==5" />
+              <label for="star5">5 stars</label>
+              <input type="radio" id="star4" name="rating" value="4" th:checked="${myreview.rating}==4" />
+              <label for="star4">4 stars</label>
+              <input type="radio" id="star3" name="rating" value="3" th:checked="${myreview.rating}==3" />
+              <label for="star3">3 stars</label>
+              <input type="radio" id="star2" name="rating" value="2" th:checked="${myreview.rating}==2" />
+              <label for="star2">2 stars</label>
+              <input type="radio" id="star1" name="rating" value="1" th:checked="${myreview.rating}==1" />
+              <label for="star1">1 star</label>
+            </fieldset>
+            <fieldset class="rating" th:if="${myreview}==null">
+              <input type="radio" id="star5" name="rating" value="5" />
+              <label for="star5">5 stars</label>
+              <input type="radio" id="star4" name="rating" value="4" />
+              <label for="star4">4 stars</label>
+              <input type="radio" id="star3" name="rating" value="3" />
+              <label for="star3">3 stars</label>
+              <input type="radio" id="star2" name="rating" value="2" />
+              <label for="star2">2 stars</label>
+              <input type="radio" id="star1" name="rating" value="1" />
+              <label for="star1">1 star</label>
+            </fieldset>
+            <textarea class="form-control" cols="40" rows="5" id="review" placeholder="Leave a review... (Optional)" th:if="${myreview}==null"></textarea>
+            <textarea class="form-control" cols="40" rows="5" id="review" th:field="${myreview.body}" th:if="${myreview}!=null" disabled></textarea>
+            <br>
+            <div class="form-group">
+              <form id="rateForm" method="post">
+                <button class="btn btn-info float-right" disabled id="post" th:hidden="${myreview}!=null">Post Review</button>
+                <button class="btn btn-info" id="edit" th:hidden="${myreview}==null">Edit Review</button>
+                <button class="btn btn-danger float-right" id="delete" th:hidden="${myreview}==null">Delete Review</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </main>
+
+  <footer class="container">
+      <br>
+      <br>
+      <p class="float-right">
+        <a href="#">Back to top</a>
+      </p>
+      <p>&copy; 2018 Hemlock, Inc. &middot;
+        <a href="/terms">Terms and Conditions</a> &middot;
+        <a href="/about">About Us</a> &middot;
+        <a href="/contact">Contact Us</a> &middot;
+        <a href="/help">Help</a> &middot;
+        <a href="https://www.facebook.com/Hemlock-225751531511551/">
+          <img src="images/facebook.png">
+        </a>
+        <a href="https://twitter.com/308Hemlock">
+          <img src="images/twitter.png">
+        </a>
+        <a href="mailto:hemlockcse308@gmail.com">
+          <img src="images/gmail.png">
+        </a>
+      </p>
+    </footer>
+
+</body>

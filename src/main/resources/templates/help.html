@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>About Hemlock</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <script src="js/jquery-3.3.1.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <link href="css/hemlock.css" rel="stylesheet">
+    <script th:inline="javascript">
+        $(document).ready(function () {
+            $('#forgotpassword').submit(function (e) {
+                e.preventDefault();
+                var user = new Object();
+                user.email = $('#email').val();
+                console.log($('#email').val());
+                $.ajax({
+                    type: 'POST',
+                    url: '/forgotpassword',
+                    data: JSON.stringify(user),
+                    dataType: 'json',
+                    contentType: 'application/json; charset=utf-8',
+                    success: function (response) {
+                        if (response.response == 'ERROR') {
+                            alert('Error');
+                        } else {
+                            alert('Email sent');
+                        }
+                    },
+                    error: function (response) {
+                        console.log(response);
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+
+<body data-spy="scroll" data-target=".navbar" data-offset="50">
+        <header>
+                <nav class="navbar navbar-expand-md navbar-light fixed-top">
+                  <a class="navbar-brand" href="/">Hemlock</a>
+                  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                  </button>
+                  <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <ul class="navbar-nav mr-auto">
+                      <li class="nav-item active dropdown">
+                        <a class="nav-link active dropdown-toggle" id="dropdown01" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true"
+                          aria-expanded="false">Movies</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdown01">
+                          <a class="dropdown-item" href="/movies/opening">Opening This Week</a>
+                          <a class="dropdown-item" href="/movies/comingsoon">Coming Soon</a>
+                          <a class="dropdown-item" href="/movies/boxoffice">Top Box Office</a>
+                          <a class="dropdown-item" href="/movies/rated?page=1">Highest Rated</a>
+                          <a class="dropdown-item" href="/movies/awardwinners?page=1">Award Winners</a>
+                        </div>
+                      </li>
+                      <li class="nav-item active dropdown">
+                        <a class="nav-link active dropdown-toggle" id="dropdown02" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true"
+                          aria-expanded="false">TV Shows</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdown02">
+                          <a class="dropdown-item" href="/tv/newtv">New TV Shows Tonight</a>
+                          <a class="dropdown-item" href="/tv/rated?page=1">Top Rated</a>
+                          <a class="dropdown-item" href="/tv/fresh">Certified Fresh</a>
+                        </div>
+                      </li>
+                      <li style="margin-left: 50px;">
+                        <form action="/search" th:action="@{/search}" method="post" class="form-inline my-2 my-lg-0" th:object="${queryOption}">
+                          <select th:field="*{dropdown}" style="margin-right: 8px;">
+                            <option th:value="All">All</option>
+                            <option th:value="Movie">Movies</option>
+                            <option th:value="TV">TV Shows</option>
+                            <option th:value="Actor">Celebrities</option>
+                          </select>
+                          <input name="query" th:field="*{query}" class="form-control mr-sm-2" type="text" placeholder="Search" style="width: 500px"
+                            required>
+                          <button class="btn btn-outline my-2 my-sm-0" type="submit">
+                            <img class="img-responsive" src="images\search-icon.png">
+                          </button>
+                        </form>
+                      </li>
+                    </ul>
+                    <div th:if="${user.username == null}">
+                      <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                          <a class="dropdown-toggle" href="#" data-toggle="dropdown">Log In
+                            <strong class="caret"></strong>
+                          </a>
+                          <div class="dropdown-menu dropdown-menu-right" style="padding: 15px; padding-bottom: 15px;">
+                            <form action="/login" th:action="@{/login}" th:object="${user}" method="post" accept-charset="UTF-8">
+                              <input id="user_username" style="margin-bottom: 15px;padding-left: 5px" type="text" name="user[username]" placeholder="Username"
+                                th:field="*{username}" size="30" />
+                              <input id="user_password" style="margin-bottom: 15px;padding-left: 5px" type="password" name="user[password]" placeholder="Password"
+                                th:field="*{password}" size="30" />
+                              <label style="display: inline-block; margin-right: 50px;" for="user_remember_me">
+                                <input type="checkbox"> Remember me
+                              </label>
+                              <br>
+                              <div class="container">
+                                <div class="row">
+                                  <div class="col-12">
+                                    <input class="btn btn-primary" style="clear: left; width: 100%; height: 32px; font-size: 13px; margin-bottom: 10px;" type="submit"
+                                      name="commit" value="Log In" />
+                                  </div>
+                                </div>
+                                <div class="row">
+                                  <div class="col-4">
+                                    <a class="btn btn-success" href="/register" style=" display: inline-block; clear: right; height: 32px; font-size: 13px;"
+                                      type="submit">Sign up</a>
+                                  </div>
+                                  <div class="col-8">
+                                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModalCenter" style=" display: inline-block; clear: right; height: 32px; font-size: 13px;width: 100%;">Forgot Password?
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </form>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                    <div th:if="${user.username != null}">
+                      <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                          <a class="dropdown-toggle" href="#" data-toggle="dropdown" style="padding-left: 8px;text-decoration: none;">
+                            <div class="media p-1 float-left">
+                              <img th:if="${user.picture}==null" src="images/profile.png" class="mr-1 mt-1 rounded-circle" style="width:30px;" />
+                              <img th:if="${user.picture}!=null" th:src="@{'data:image/jpeg;base64,'+${user.picture64}}" class="mr-1 mt-1 rounded-circle"
+                                style="width:30px;" />
+                            </div>
+                            <div th:text="${user.username}" style="display: inline-block; text-align: center;vertical-align: middle;line-height: 40px;"></div>
+                            <strong class="caret"></strong>
+                          </a>
+                          <div class="dropdown-menu dropdown-menu-right" style="padding: 15px; width: 190px;">
+                            <div class="row">
+                              <div class="col-5">
+                                <div class="media p-1 float-left">
+                                  <img th:if="${user.picture}==null" src="images/profile.png" class="mr-1 mt-1 rounded-circle" style="width:60px;" />
+                                  <img th:if="${user.picture}!=null" th:src="@{'data:image/jpeg;base64,'+${user.picture64}}" class="mr-1 mt-1 rounded-circle"
+                                    style="width:60px;" />
+                                </div>
+                              </div>
+                              <div class="col-7">
+                                <div style="padding:5px; width: 100%;">
+                                  <a th:href="@{/user(username=${user.username})}+'#watchlist'" style="font-size:15px; color:green">
+                                    <b>Watchlist</b>
+                                  </a>
+                                  <a th:href="@{/user(username=${user.username})}+'#blacklist'" style="font-size:15px; color:red">
+                                    <b>Blacklist</b>
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                            <a th:href="@{/user(username=${user.username})}" style="text-decoration: none;">Profile</a>
+                            <br>
+                            <a href="/account" style="text-decoration: none;">Account Settings</a>
+                            <br>
+                            <div class="dropdown-divider"></div>
+                            <form action="/logout" method="post">
+                              <input class="btn btn-danger" style="clear: left; width: 100%; height: 32px; font-size: 13px;" type="submit" name="commit"
+                                value="Log Out" />
+                            </form>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </nav>
+                <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLongTitle">Reset Password</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                      <div class="modal-body">
+                        <input id="email" type="text" class="form-control" placeholder="Enter email">
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <form id="forgotpassword" method="POST">
+                          <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </header>
+
+    <div class="row justify-content-center">
+        <div class="col-10">
+            <div class="card card-body bg-light" style="margin-top:100px;">
+                <div class="row justify-content-center">
+                    <div class="col-12">
+                        <h1>Help</h1>
+                        <p>Here is a guide to using this website, and refer to here if you do not know how to do certain things
+                            on this website.</p>
+                        <h3>Getting Started</h3>
+                        <p>You can browse the site without registering, but for the full experience of the site, you should
+                            start off by registering by clicking the top right dropdown menu. This will reveal a button saying
+                            'Sign Up'. Click on that and it will take you to a registration form. Fill
+                            in your desired username, password and email address, and a verification key will be sent to
+                            you right away. After this, you must verify your account through your email.
+                            Once you are verified, you can use the username and password to log in anytime
+                            using the same dropdown menu.</p>
+                        <h3>What Can I Do?</h3>
+                        <p>You can do a variety of things on this website. For one, you can create your own watchlist and blacklist
+                            of movies. The option to add to the lists is available on every movie and TV show details page.
+                            You may view the lists on your profile page, being quickly accessible through the dropdown.</p>
+                        <p>You may also review movies and tv shows through their respective pages. 
+                            You will be required to give the film a rating of 0-5 stars, and can include an optional comment. This
+                            review will be posted on the details page, and your own review will be available for edit as
+                            well. All reviews you make are visible on your profile page. Please note that you may only leave one review
+                            per movie/show.</p>
+                        <h3>Upgrading Accounts</h3>
+                        <p>You may apply to become a verified critic on our website. You can do so by going in to your profile,
+                            and manage accounts. There should be a apply to be a critic option there. After clicking on that button
+                            and filling in the form displayed, the admins of the site will read your application
+                            and will decide to approve or reject your application. Once approved, you will be considered a verified critic.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container">
+            <br>
+            <br>
+            <p class="float-right">
+              <a href="#">Back to top</a>
+            </p>
+            <p>&copy; 2018 Hemlock, Inc. &middot;
+              <a href="/terms">Terms and Conditions</a> &middot;
+              <a href="/about">About Us</a> &middot;
+              <a href="/contact">Contact Us</a> &middot;
+              <a href="/help">Help</a> &middot;
+              <a href="https://www.facebook.com/Hemlock-225751531511551/">
+                <img src="images/facebook.png">
+              </a>
+              <a href="https://twitter.com/308Hemlock">
+                <img src="images/twitter.png">
+              </a>
+              <a href="mailto:hemlockcse308@gmail.com">
+                <img src="images/gmail.png">
+              </a>
+            </p>
+          </footer>
+</body>
+

@@ -1,0 +1,201 @@
+#heading{color:white;} 
+a {
+  text-decoration: none; 
+  color: black; 
+}
+
+body{
+  background-color:#a2a2c3;
+}
+
+.btn-outline,
+.btn-outline:hover {
+  background-color:#efeff5;
+  border-color:#4560a5;
+}
+
+.card-text {
+  overflow: hidden;
+  position: relative; 
+  line-height: 1.2em;
+  max-height: 7.2em; 
+  text-align: justify;  
+  margin-right: -1em;
+  padding-right: 1em;
+}
+
+.card-text:before {
+  content: '...';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
+
+.card-text:after {
+  content: '';
+  position: absolute;
+  right: 0;
+  width: 1em;
+  height: 1em;
+  margin-top: 0.2em;
+  background: white;
+}
+
+.jumbotron h1{
+  margin:0;
+  padding-left: 50px;
+  color:white;
+}
+
+.dropdown-menu {
+  background-color: #e6e6ff;
+}
+
+.photo{
+  cursor: pointer;
+}
+
+.image-cropper-small {
+  width: 30px;
+  height: 30px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 150%;
+  background-position: center center;
+}
+
+.image-cropper {
+  width: 60px;
+  height: 60px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 150%;
+}
+
+.image-cropper-square {
+  width: 60px;
+  height: 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.navbar{
+  background-color: #e6e6ff;
+}
+
+.line-clamp:after {
+ background: transparent;
+ bottom: 0;
+ content: "...";
+ font-weight: bold;
+ padding: 0 20px 1px 45px;
+ position: absolute;
+ right: 0;
+}
+
+.line-clamp-shows:after {
+ background: transparent;
+ bottom: 0;
+ content: "";
+ font-weight: bold;
+ padding: 0 20px 1px 45px;
+ position: absolute;
+ right: 0;
+}
+
+.line-clamp {
+ height: 15em;
+ line-height: 1.4em;
+ overflow: hidden;
+ position: relative;
+}
+
+.line-clamp-shows {
+ height: 100%;
+ line-height: 1.6em;
+ overflow: hidden;
+ position: relative;
+}
+
+.card-img-top:hover btn{
+  display: inline-block !important; 
+} 
+
+.p{
+  margin-bottom: 0px !important;
+}
+
+.pSize {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.poster {
+  height: 160px;
+  width: 120px;
+}
+
+.rating {
+  float:left;
+}
+.rating:not(:checked) > input {
+  position:absolute;
+  clip:rect(0,0,0,0);
+}
+.rating:not(:checked) > label {
+  float:right;
+  width:1em;
+  padding:0 .1em;
+  overflow:hidden;
+  white-space:nowrap;
+  cursor:pointer;
+  font-size:200%;
+  line-height:1.2;
+  color:#ddd;
+  text-shadow:1px 1px #bbb, 2px 2px #666, .1em .1em .2em rgba(0,0,0,.5);
+}
+.rating:not(:checked) > label:before {
+  content: '★ ';
+}
+.rating > input:checked ~ label {
+  color: #f70;
+  text-shadow:1px 1px #c60, 2px 2px #940, .1em .1em .2em rgba(0,0,0,.5);
+}
+.rating:not(:checked) > label:hover,
+.rating:not(:checked) > label:hover ~ label {
+  color: gold;
+  text-shadow:1px 1px goldenrod, 2px 2px #B57340, .1em .1em .2em rgba(0,0,0,.5);
+}
+.rating > input:checked + label:hover,
+.rating > input:checked + label:hover ~ label,
+.rating > input:checked ~ label:hover,
+.rating > input:checked ~ label:hover ~ label,
+.rating > label:hover ~ input:checked ~ label {
+  color: #ea0;
+  text-shadow:1px 1px goldenrod, 2px 2px #B57340, .1em .1em .2em rgba(0,0,0,.5);
+}
+.rating > label:active {
+  position:relative;
+  top:2px;
+  left:2px;
+}
+
+select {
+  display: inline-block;
+  height:38px;
+  width: 110px;
+  padding: 2px 0px 2px 5px;
+  outline: none;
+  color: #74646e;
+  border: 1px solid #C8BFC4;
+  border-radius: 4px;
+  box-shadow: inset 1px 1px 2px #ddd8dc;
+  background-color: #efeff5;
+  border-color: #4560a5;
+}
+
+.scrollable-menu {
+  height: auto;
+  max-height: 200px;
+  overflow-x: hidden;
+}

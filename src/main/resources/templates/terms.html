@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <title>Terms and Conditions</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <script src="js/jquery-3.3.1.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <link href="css/hemlock.css" rel="stylesheet">
+  <script th:inline="javascript">
+    $(document).ready(function () {
+      $('#forgotpassword').submit(function (e) {
+        e.preventDefault();
+        var user = new Object();
+        user.email = $('#email').val();
+        console.log($('#email').val());
+        $.ajax({
+          type: 'POST',
+          url: '/forgotpassword',
+          data: JSON.stringify(user),
+          dataType: 'json',
+          contentType: 'application/json; charset=utf-8',
+          success: function (response) {
+            if (response.response == 'ERROR') {
+              alert('Error');
+            }
+            else {
+              alert('Email sent');
+            }
+          },
+          error: function (response) {
+            console.log(response);
+          }
+        });
+      });
+    });
+  </script>
+</head>
+
+<body data-spy="scroll" data-target=".navbar" data-offset="50">
+    <header>
+        <nav class="navbar navbar-expand-md navbar-light fixed-top">
+          <a class="navbar-brand" href="/">Hemlock</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item active dropdown">
+                <a class="nav-link active dropdown-toggle" id="dropdown01" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true"
+                  aria-expanded="false">Movies</a>
+                <div class="dropdown-menu" aria-labelledby="dropdown01">
+                  <a class="dropdown-item" href="/movies/opening">Opening This Week</a>
+                  <a class="dropdown-item" href="/movies/comingsoon">Coming Soon</a>
+                  <a class="dropdown-item" href="/movies/boxoffice">Top Box Office</a>
+                  <a class="dropdown-item" href="/movies/rated?page=1">Highest Rated</a>
+                  <a class="dropdown-item" href="/movies/awardwinners?page=1">Award Winners</a>
+                </div>
+              </li>
+              <li class="nav-item active dropdown">
+                <a class="nav-link active dropdown-toggle" id="dropdown02" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true"
+                  aria-expanded="false">TV Shows</a>
+                <div class="dropdown-menu" aria-labelledby="dropdown02">
+                  <a class="dropdown-item" href="/tv/newtv">New TV Shows Tonight</a>
+                  <a class="dropdown-item" href="/tv/rated?page=1">Top Rated</a>
+                  <a class="dropdown-item" href="/tv/fresh">Certified Fresh</a>
+                </div>
+              </li>
+              <li style="margin-left: 50px;">
+                <form action="/search" th:action="@{/search}" method="post" class="form-inline my-2 my-lg-0" th:object="${queryOption}">
+                  <select th:field="*{dropdown}" style="margin-right: 8px;">
+                    <option th:value="All">All</option>
+                    <option th:value="Movie">Movies</option>
+                    <option th:value="TV">TV Shows</option>
+                    <option th:value="Actor">Celebrities</option>
+                  </select>
+                  <input name="query" th:field="*{query}" class="form-control mr-sm-2" type="text" placeholder="Search" style="width: 500px"
+                    required>
+                  <button class="btn btn-outline my-2 my-sm-0" type="submit">
+                    <img class="img-responsive" src="images\search-icon.png">
+                  </button>
+                </form>
+              </li>
+            </ul>
+            <div th:if="${user.username == null}">
+              <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                  <a class="dropdown-toggle" href="#" data-toggle="dropdown">Log In
+                    <strong class="caret"></strong>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-right" style="padding: 15px; padding-bottom: 15px;">
+                    <form action="/login" th:action="@{/login}" th:object="${user}" method="post" accept-charset="UTF-8">
+                      <input id="user_username" style="margin-bottom: 15px;padding-left: 5px" type="text" name="user[username]" placeholder="Username"
+                        th:field="*{username}" size="30" />
+                      <input id="user_password" style="margin-bottom: 15px;padding-left: 5px" type="password" name="user[password]" placeholder="Password"
+                        th:field="*{password}" size="30" />
+                      <label style="display: inline-block; margin-right: 50px;" for="user_remember_me">
+                        <input type="checkbox"> Remember me
+                      </label>
+                      <br>
+                      <div class="container">
+                        <div class="row">
+                          <div class="col-12">
+                            <input class="btn btn-primary" style="clear: left; width: 100%; height: 32px; font-size: 13px; margin-bottom: 10px;" type="submit"
+                              name="commit" value="Log In" />
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-4">
+                            <a class="btn btn-success" href="/register" style=" display: inline-block; clear: right; height: 32px; font-size: 13px;"
+                              type="submit">Sign up</a>
+                          </div>
+                          <div class="col-8">
+                            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModalCenter" style=" display: inline-block; clear: right; height: 32px; font-size: 13px;width: 100%;">Forgot Password?
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div th:if="${user.username != null}">
+              <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                  <a class="dropdown-toggle" href="#" data-toggle="dropdown" style="padding-left: 8px;text-decoration: none;">
+                    <div class="media p-1 float-left">
+                      <img th:if="${user.picture}==null" src="images/profile.png" class="mr-1 mt-1 rounded-circle" style="width:30px;" />
+                      <img th:if="${user.picture}!=null" th:src="@{'data:image/jpeg;base64,'+${user.picture64}}" class="mr-1 mt-1 rounded-circle"
+                        style="width:30px;" />
+                    </div>
+                    <div th:text="${user.username}" style="display: inline-block; text-align: center;vertical-align: middle;line-height: 40px;"></div>
+                    <strong class="caret"></strong>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-right" style="padding: 15px; width: 190px;">
+                    <div class="row">
+                      <div class="col-5">
+                        <div class="media p-1 float-left">
+                          <img th:if="${user.picture}==null" src="images/profile.png" class="mr-1 mt-1 rounded-circle" style="width:60px;" />
+                          <img th:if="${user.picture}!=null" th:src="@{'data:image/jpeg;base64,'+${user.picture64}}" class="mr-1 mt-1 rounded-circle"
+                            style="width:60px;" />
+                        </div>
+                      </div>
+                      <div class="col-7">
+                        <div style="padding:5px; width: 100%;">
+                          <a th:href="@{/user(username=${user.username})}+'#watchlist'" style="font-size:15px; color:green">
+                            <b>Watchlist</b>
+                          </a>
+                          <a th:href="@{/user(username=${user.username})}+'#blacklist'" style="font-size:15px; color:red">
+                            <b>Blacklist</b>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                    <a th:href="@{/user(username=${user.username})}" style="text-decoration: none;">Profile</a>
+                    <br>
+                    <a href="/account" style="text-decoration: none;">Account Settings</a>
+                    <br>
+                    <div class="dropdown-divider"></div>
+                    <form action="/logout" method="post">
+                      <input class="btn btn-danger" style="clear: left; width: 100%; height: 32px; font-size: 13px;" type="submit" name="commit"
+                        value="Log Out" />
+                    </form>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Reset Password</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <input id="email" type="text" class="form-control" placeholder="Enter email">
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <form id="forgotpassword" method="POST">
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+  <main role="main" style="margin-top:50px;">
+    <div class="row justify-content-center">
+      <div class="col-10">
+        <div class="card card-body bg-light" style="margin-top:100px;">
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <h1>Terms of Service ("Terms")</h1>
+              <p>Last updated: May 03, 2018</p>
+              <p>Please read these Terms of Service ("Terms", "Terms of Service") carefully before using the www.Hemlock.com
+                website (the "Service") operated by Hemlock ("us", "we", or "our").</p>
+              <p>Your access to and use of the Service is conditioned on your acceptance of and compliance with these Terms.
+                These Terms apply to all visitors, users and others who access or use the Service.</p>
+              <p>By accessing or using the Service you agree to be bound by these Terms. If you disagree with any part of the
+                terms then you may not access the Service.
+
+              <h2>Accounts</h2>
+              <p>When you create an account with us, you must provide us information that is accurate, complete, and current
+                at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination
+                of your account on our Service.</p>
+
+              <p>You are responsible for safeguarding the password that you use to access the Service and for any activities
+                or actions under your password, whether your password is with our Service or a third-party service.</p>
+
+              <p>You agree not to disclose your password to any third party. You must notify us immediately upon becoming aware
+                of any breach of security or unauthorized use of your account.</p>
+
+              <h2>Links To Other Web Sites</h2>
+
+              <p>Our Service may contain links to third-party web sites or services that are not owned or controlled by Hemlock.</p>
+
+              <p>Hemlock has no control over, and assumes no responsibility for, the content, privacy policies, or practices
+                of any third party web sites or services. You further acknowledge and agree that Hemlock shall not be responsible
+                or liable, directly or indirectly, for any damage or loss caused or alleged to be caused by or in connection
+                with use of or reliance on any such content, goods or services available on or through any such web sites
+                or services.</p>
+
+              <p>We strongly advise you to read the terms and conditions and privacy policies of any third-party web sites or
+                services that you visit.</p>
+
+
+              <h2>Termination</h2>
+
+              <p>We may terminate or suspend access to our Service immediately, without prior notice or liability, for any reason
+                whatsoever, including without limitation if you breach the Terms.</p>
+
+              <p>All provisions of the Terms which by their nature should survive termination shall survive termination, including,
+                without limitation, ownership provisions, warranty disclaimers, indemnity and limitations of liability.</p>
+
+              <p>Upon termination, your right to use the Service will immediately cease. If you wish to terminate your account,
+                you may simply discontinue using the Service.</p>
+
+              <h2>Governing Law</h2>
+
+              <p>These Terms shall be governed and construed in accordance with the laws of New York, United States, without
+                regard to its conflict of law provisions.</p>
+
+              <p>Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights.
+                If any provision of these Terms is held to be invalid or unenforceable by a court, the remaining provisions
+                of these Terms will remain in effect. These Terms constitute the entire agreement between us regarding our
+                Service, and supersede and replace any prior agreements we might have between us regarding the Service.</p>
+
+              <h2>Changes</h2>
+
+              <p>We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is
+                material we will try to provide at least 30 days notice prior to any new terms taking effect. What constitutes
+                a material change will be determined at our sole discretion.</p>
+
+              <p>By continuing to access or use our Service after those revisions become effective, you agree to be bound by
+                the revised terms. If you do not agree to the new terms, please stop using the Service.</p>
+
+
+              <h2>Contact Us</h2>
+
+              <p>If you have any questions about these Terms, please contact us.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer class="container">
+      <br>
+      <br>
+      <p class="float-right">
+        <a href="#">Back to top</a>
+      </p>
+      <p>&copy; 2018 Hemlock, Inc. &middot;
+        <a href="/terms">Terms and Conditions</a> &middot;
+        <a href="/about">About Us</a> &middot;
+        <a href="/contact">Contact Us</a> &middot;
+        <a href="/help">Help</a> &middot;
+        <a href="https://www.facebook.com/Hemlock-225751531511551/">
+          <img src="images/facebook.png">
+        </a>
+        <a href="https://twitter.com/308Hemlock">
+          <img src="images/twitter.png">
+        </a>
+        <a href="mailto:hemlockcse308@gmail.com">
+          <img src="images/gmail.png">
+        </a>
+      </p>
+    </footer>
+</body>

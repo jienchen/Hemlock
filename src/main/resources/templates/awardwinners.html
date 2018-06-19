@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <title>Award Winners</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <script src="../js/jquery-3.3.1.js"></script>
+  <script src="../js/popper.min.js"></script>
+  <script src="../js/bootstrap.min.js"></script>
+  <script src="../js/page.js"></script>
+  <link href="../css/hemlock.css" rel="stylesheet">
+  <script th:inline="javascript">
+    $(document).ready(function () {
+      $('[data-toggle="tooltip"]').tooltip();
+      $('#forgotpassword').submit(function (e) {
+        e.preventDefault();
+        var user = new Object();
+        user.email = $('#email').val();
+        console.log($('#email').val());
+        $.ajax({
+          type: 'POST',
+          url: '/forgotpassword',
+          data: JSON.stringify(user),
+          dataType: 'json',
+          contentType: 'application/json; charset=utf-8',
+          success: function (response) {
+            if (response.response == 'ERROR') {
+              alert('Error');
+            }
+            else {
+              alert('Email sent');
+            }
+          },
+          error: function (response) {
+            console.log(response);
+          }
+        });
+      });
+    });
+  </script>
+</head>
+
+<body data-spy="scroll" data-target=".navbar" data-offset="50">
+  <header>
+    <nav class="navbar navbar-expand-md navbar-light fixed-top">
+      <a class="navbar-brand" href="/">Hemlock</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse"
+        aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active dropdown">
+            <a class="nav-link active dropdown-toggle" id="dropdown01" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true"
+              aria-expanded="false">Movies</a>
+            <div class="dropdown-menu" aria-labelledby="dropdown01">
+              <a class="dropdown-item" href="/movies/opening">Opening This Week</a>
+              <a class="dropdown-item" href="/movies/comingsoon">Coming Soon</a>
+              <a class="dropdown-item" href="/movies/boxoffice">Top Box Office</a>
+              <a class="dropdown-item" href="/movies/rated?page=1">Highest Rated</a>
+              <a class="dropdown-item" href="/movies/awardwinners?page=1">Award Winners</a>
+            </div>
+          </li>
+          <li class="nav-item active dropdown">
+            <a class="nav-link active dropdown-toggle" id="dropdown02" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true"
+              aria-expanded="false">TV Shows</a>
+            <div class="dropdown-menu" aria-labelledby="dropdown02">
+              <a class="dropdown-item" href="/tv/newtv">New TV Shows Tonight</a>
+              <a class="dropdown-item" href="/tv/rated?page=1">Top Rated</a>
+              <a class="dropdown-item" href="/tv/fresh">Certified Fresh</a>
+            </div>
+          </li>
+          <li style="margin-left: 50px;">
+            <form action="/search" th:action="@{/search}" method="post" class="form-inline my-2 my-lg-0" th:object="${queryOption}">
+              <select th:field="*{dropdown}" style="margin-right: 8px;">
+                <option th:value="All">All</option>
+                <option th:value="Movie">Movies</option>
+                <option th:value="TV">TV Shows</option>
+                <option th:value="Actor">Celebrities</option>
+              </select>
+              <input name="query" th:field="*{query}" class="form-control mr-sm-2" type="text" placeholder="Search" style="width: 500px"
+                required>
+              <button class="btn btn-outline my-2 my-sm-0" type="submit">
+                <img class="img-responsive" src="../images\search-icon.png">
+              </button>
+            </form>
+          </li>
+        </ul>
+        <div th:if="${user.username == null}">
+          <ul class="nav navbar-nav navbar-right">
+            <li class="dropdown">
+              <a class="dropdown-toggle" href="#" data-toggle="dropdown">Log In
+                <strong class="caret"></strong>
+              </a>
+              <div class="dropdown-menu dropdown-menu-right" style="padding: 15px; padding-bottom: 15px;">
+                <form action="/login" th:action="@{/login}" th:object="${user}" method="post" accept-charset="UTF-8">
+                  <input id="user_username" style="margin-bottom: 15px;padding-left: 5px" type="text" name="user[username]" placeholder="Username"
+                    th:field="*{username}" size="30" />
+                  <input id="user_password" style="margin-bottom: 15px;padding-left: 5px" type="password" name="user[password]" placeholder="Password"
+                    th:field="*{password}" size="30" />
+                  <label style="display: inline-block; margin-right: 50px;" for="user_remember_me">
+                    <input type="checkbox"> Remember me
+                  </label>
+                  <br>
+                  <div class="container">
+                    <div class="row">
+                      <div class="col-12">
+                        <input class="btn btn-primary" style="clear: left; width: 100%; height: 32px; font-size: 13px; margin-bottom: 10px;" type="submit"
+                          name="commit" value="Log In" />
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-4">
+                        <a class="btn btn-success" href="/register" style=" display: inline-block; clear: right; height: 32px; font-size: 13px;"
+                          type="submit">Sign up</a>
+                      </div>
+                      <div class="col-8">
+                        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModalCenter" style=" display: inline-block; clear: right; height: 32px; font-size: 13px;width: 100%;">Forgot Password?
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div th:if="${user.username != null}">
+          <ul class="nav navbar-nav navbar-right">
+            <li class="dropdown">
+              <a class="dropdown-toggle" href="#" data-toggle="dropdown" style="padding-left: 8px;text-decoration: none;">
+                <div class="media p-1 float-left">
+                  <img th:if="${user.picture}==null" src="images/profile.png" class="mr-1 mt-1 rounded-circle" style="width:30px;" />
+                  <img th:if="${user.picture}!=null" th:src="@{'data:image/jpeg;base64,'+${user.picture64}}" class="mr-1 mt-1 rounded-circle"
+                    style="width:30px;" />
+                </div>
+                <div th:text="${user.username}" style="display: inline-block; text-align: center;vertical-align: middle;line-height: 40px;"></div>
+                <strong class="caret"></strong>
+              </a>
+              <div class="dropdown-menu dropdown-menu-right" style="padding: 15px; width: 190px;">
+                <div class="row">
+                  <div class="col-5">
+                    <div class="media p-1 float-left">
+                      <img th:if="${user.picture}==null" src="images/profile.png" class="mr-1 mt-1 rounded-circle" style="width:60px;" />
+                      <img th:if="${user.picture}!=null" th:src="@{'data:image/jpeg;base64,'+${user.picture64}}" class="mr-1 mt-1 rounded-circle"
+                        style="width:60px;" />
+                    </div>
+                  </div>
+                  <div class="col-7">
+                    <div style="padding:5px; width: 100%;">
+                      <a th:href="@{/user(username=${user.username})}+'#watchlist'" style="font-size:15px; color:green">
+                        <b>Watchlist</b>
+                      </a>
+                      <a th:href="@{/user(username=${user.username})}+'#blacklist'" style="font-size:15px; color:red">
+                        <b>Blacklist</b>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <a th:href="@{/user(username=${user.username})}" style="text-decoration: none;">Profile</a>
+                <br>
+                <a href="/account" style="text-decoration: none;">Account Settings</a>
+                <br>
+                <div class="dropdown-divider"></div>
+                <form action="/logout" method="post">
+                  <input class="btn btn-danger" style="clear: left; width: 100%; height: 32px; font-size: 13px;" type="submit" name="commit"
+                    value="Log Out" />
+                </form>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Reset Password</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <input id="email" type="text" class="form-control" placeholder="Enter email">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <form id="forgotpassword" method="POST">
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="album py-5 bg-light">
+    <div class="container">
+      <div class="row">
+        <div class="col-6" style="padding-top: 30px;padding-bottom: 20px;">
+          <h1>Oscar Award Winners</h1>
+        </div>
+        <div class="col-6" style="padding-top: 30px;padding-bottom: 20px;">
+          <div class="btn-group float-right">
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Select a year
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu scrollable-menu" role="menu" id="yearList" style="width:130px">
+              <script th:inline="javascript">
+                text = "";
+                for (i = 2018; i > 1949; i--) {
+                  text += "<li><a href='/movies/awardwinners?year=" + i + "&page=1' style='padding-left:5px;'>" + i + "</a>";
+                }
+                document.getElementById("yearList").innerHTML = text;
+              </script>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-12">
+        <ul class="nav nav-tabs justify-content-end" style="margin-bottom: 20px;">
+          <li class="nav-item">
+            <a class="nav-link active" id="list-tab" data-toggle="tab" href="#list" role="tab" aria-controls="list" aria-selected="true">
+              <img src="../images/list.png" style="width:20px;height: 20px;">
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="grid-tab" data-toggle="tab" href="#grid" role="tab" aria-controls="grid" aria-selected="false">
+              <img src="../images/grid.png" style="width:20px;height: 20px;">
+            </a>
+          </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+          <div class="tab-pane fade show active" id="list" role="tabpanel" aria-labelledby="list-tab">
+            <ul class="list-unstyled">
+              <li class="media mb-2" th:each="movie : ${display}" th:if="${movieStat.index}">
+                <a th:href="@{/movie(id=${movie.id})}">
+                  <img class="mr-3 poster" th:src="'../images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${movie.title}">
+                </a>
+                <div class="media-body align-self-center">
+                  <div class="row">
+                    <div class="col-8">
+                      <h5 class="mt-0 mb-1" th:text="${movie.title}">
+                        <a th:href="@{/movie(id=${movie.id})}"></a>
+                      </h5>
+                    </div>
+                    <div class="col-4">
+                      <div class="row">
+                        <div class="col-12" th:if="${movie.avgCriticRating}==null and ${movie.avgGenRating}==null">
+                          <p style="float: right;">No Ratings Yet</p>
+                        </div>
+                        <div class="col-4"></div>
+                        <div class="col-4">
+                          <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}>60" src="../images/criticfresh.png" style="height: 24px;">
+                          <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}<=60" src="../images/criticrotten.png" style="height: 24px;">
+                          <small th:if="${movie.avgCriticRating}!=null" th:text="${movie.avgCriticRating}+'%'"></small>
+                        </div>
+                        <div class="col-4">
+                          <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}>60" src="../images/like.png" style="height: 24px;">
+                          <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}<=60" src="../images/dislike.png" style="height: 24px;">
+                          <small th:if="${movie.avgGenRating}!=null" th:text="${movie.avgGenRating}+'%'"></small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <a th:text="'In Theaters: '+${movie.releaseDate}"></a>
+                  <br>
+                  <a th:text="'Description: '+${movie.shortDesc}"></a>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div class="tab-pane fade" id="grid" role="tabpanel" aria-labelledby="grid-tab">
+            <div class="card-deck">
+              <div class="col-3" th:each="movie : ${display}" th:if="${movieStat.index}" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
+                <div class="card" style="margin-bottom:20px;">
+                  <a th:href="@{/movie(id=${movie.id})}">
+                    <img class="card-img-top" th:src="'../images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${movie.title}">
+                  </a>
+                  <div class="card-body" style="height: 175px;">
+                    <a th:href="@{/movie(id=${movie.id})}">
+                      <h5 class="card-title" th:text="${movie.title}" style="white-space: nowrap;overflow: hidden;" data-toggle="tooltip" data-placement="top"
+                        th:title="${movie.title}"></h5>
+                    </a>
+                    <p class="card-text" th:text="${movie.description}"></p>
+                  </div>
+                  <div class="card-footer">
+                    <div class="row">
+                      <div class="col-12" th:if="${movie.avgCriticRating}==null and ${movie.avgGenRating}==null">
+                        <center>
+                          <small>No Ratings Yet </small>
+                        </center>
+                      </div>
+                      <div class="col-2"></div>
+                      <div class="col-4" th:if="${movie.avgCriticRating}!=null or ${movie.avgGenRating}!=null">
+                        <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}>60" src="../images/criticfresh.png" style="height: 24px;">
+                        <img th:if="${movie.avgCriticRating}!=null and ${movie.avgCriticRating}<=60" src="../images/criticrotten.png" style="height: 24px;">
+                        <small th:if="${movie.avgCriticRating}!=null" th:text="${movie.avgCriticRating}+'%'"></small>
+                      </div>
+                      <div class="col-4" th:if="${movie.avgCriticRating}!=null or ${movie.avgGenRating}!=null">
+                        <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}>60" src="../images/like.png" style="height: 24px;">
+                        <img th:if="${movie.avgGenRating}!=null and ${movie.avgGenRating}<=60" src="../images/dislike.png" style="height: 24px;">
+                        <small th:if="${movie.avgGenRating}!=null" th:text="${movie.avgGenRating}+'%'"></small>
+                      </div>
+                      <div class="col-2"></div>
+                      <div class="col-12">
+                        <center>
+                          <small th:text="'In Theaters: '+${movie.releaseDate}"></small>
+                        </center>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row px-5" style="align-items: center;" th:if="${pagination}">
+      <div class="mx-auto">
+        <ul class="pagination" id="pages">
+          <script th:inline="javascript">
+            var size = /*[[${size}]]*/ '0';
+            var current = /*[[${current}]]*/ '0';
+            var set = parseInt((current - 1) / 15);
+            var start = set * 15;
+            var end = (set + 1) * 15;
+            var text = ""
+            if (current < 16) {
+              text += "<li class='page-item disabled'>";
+            }
+            else {
+              text += "<li class='page-item'>";
+            }
+            text += "<a class='page-link' href='/movies/awardwinners?page=" + ((set - 1) * 15 + 1) + "'>Previous 15</a></li>";
+            for (i = 1; i < size / 12; i++) {
+              if (i > start && i <= end) {
+                if (i != current) {
+                  text += "<li class='page-item'><a class='page-link' href='/movies/awardwinners?page=" + i + "'>" + i + "</a></li>";
+                }
+                else {
+                  text += "<li class='page-item active'><a class='page-link' href='/movies/awardwinners?page=" + i + "'>" + i + "</a></li>";
+                }
+              }
+              else if (i == (set + 1) * 15 + 1) {
+                text += "<li class='page-item disabled'><a class='page-link' href='#'>…</a></li>";
+              }
+            }
+            if (current == size / 12) {
+              text += "<li class='page-item active'><a class='page-link'href='/movies/awardwinners?page=" + size / 12 + "'>" + size / 12 + "</a></li>";
+            }
+            else {
+              text += "<li class='page-item'><a class='page-link'href='/movies/awardwinners?page=" + parseInt(size / 12) + "'>" + parseInt(size / 12) + "</a></li>";
+            }
+            if (parseInt((size / 12) / 15) == set) {
+              text += "<li class='page-item disabled'>";
+            }
+            else {
+              text += "<li class='page-item'>";
+            }
+            text += "<a class='page-link' href='/movies/awardwinners?page=" + ((set + 1) * 15 + 1) + "'>Next 15</a></li>";
+
+            document.getElementById("pages").innerHTML = text;
+          </script>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+  <footer class="container">
+      <br>
+      <br>
+      <p class="float-right">
+        <a href="#">Back to top</a>
+      </p>
+      <p>&copy; 2018 Hemlock, Inc. &middot;
+        <a href="/terms">Terms and Conditions</a> &middot;
+        <a href="/about">About Us</a> &middot;
+        <a href="/contact">Contact Us</a> &middot;
+        <a href="/help">Help</a> &middot;
+        <a href="https://www.facebook.com/Hemlock-225751531511551/">
+          <img src="images/facebook.png">
+        </a>
+        <a href="https://twitter.com/308Hemlock">
+          <img src="images/twitter.png">
+        </a>
+        <a href="mailto:hemlockcse308@gmail.com">
+          <img src="images/gmail.png">
+        </a>
+      </p>
+    </footer>
+</body>

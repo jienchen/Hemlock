@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Verify</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery-3.3.1.js"></script>
+    <script src="js/background.js"></script>
+    <script src="js/register.js"></script>
+    <link href="css/hemlock.css" rel="stylesheet">
+    <style>
+        html,div {
+            height: 100%;
+            width: 100%;
+        }
+
+        body {
+            background-image: url("images/montage.png");
+            background-repeat: repeat-x;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md navbar-light fixed-top">
+        <a class="navbar-brand" href="/">Hemlock</a>
+    </nav>
+    <div class="row justify-content-center">
+        <div class="col-6">
+            <div class="card card-body bg-light" style="margin-top:100px;">
+                <div class="row justify-content-center">
+                    <div class="col-12">
+                        <h3>Reset Account</h3>
+                        <br>
+                        <div th:if="${message.message != null}">
+                            <p th:if="${message.message == 'Password has been Reset'}" th:text="${message.message}" style="color:green"></p>
+                            <p th:if="${message.message != 'Password has been Reset'}" th:text="${message.message}" style="color:red"></p>
+                        </div>
+                        <br>
+                        <form action="/reset" th:action="@{/reset}" th:object="${user}" method="post">
+                            <div class="form-group">
+                                <label for="email">Email:</label>
+                                <input th:value="${user.email}" th:field="*{email}" type="email" class="form-control" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="token">Token:</label>
+                                <input th:value="${user.resetToken}" th:field="*{resetToken}" type="text" class="form-control" name="token" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password:</label>
+                                <input type="password" class="form-control" th:field="*{password}" name="password" required>
+                            </div>
+                            <button class="btn btn-primary float-right" type="submit">Reset</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container">
+            <br>
+            <br>
+            <p class="float-right">
+              <a href="#">Back to top</a>
+            </p>
+            <p>&copy; 2018 Hemlock, Inc. &middot;
+              <a href="/terms">Terms and Conditions</a> &middot;
+              <a href="/about">About Us</a> &middot;
+              <a href="/contact">Contact Us</a> &middot;
+              <a href="/help">Help</a> &middot;
+              <a href="https://www.facebook.com/Hemlock-225751531511551/">
+                <img src="images/facebook.png">
+              </a>
+              <a href="https://twitter.com/308Hemlock">
+                <img src="images/twitter.png">
+              </a>
+              <a href="mailto:hemlockcse308@gmail.com">
+                <img src="images/gmail.png">
+              </a>
+            </p>
+          </footer>
+</body>

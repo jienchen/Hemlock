@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <title>Profile</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <script src="js/jquery-3.3.1.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/modalEdit.js"></script>
+  <script src="js/profile.js"></script>
+  <link href="css/hemlock.css" rel="stylesheet">
+  <script th:inline="javascript">
+    $(document).ready(function () {
+      $('#follow').submit(function (e) {
+        e.preventDefault();
+        var follow = new Object();
+        var ajaxURL = '';
+        follow.username = /*[[${loggedin.username}]]*/ 'null';
+        follow.follow = /*[[${user.username}]]*/ 'null';
+        if ($('#followbutton').text() == "Follow") {
+          ajaxURL = '/user/follow';
+        }
+        else if ($('#followbutton').text() == "Unfollow") {
+          ajaxURL = '/user/unfollow';
+        }
+        $.ajax({
+          type: 'POST',
+          url: ajaxURL,
+          data: JSON.stringify(follow),
+          dataType: 'json',
+          contentType: 'application/json; charset=utf-8',
+          success: function (response) {
+            if (response.response == 'ERROR') {
+              $('#listModal').modal()
+            }
+            else if ($("#followbutton").text() == 'Follow') {
+              $("#followbutton").text('Unfollow');
+              $("#followbutton").addClass('btn-danger').removeClass('btn-success');
+              $("#count").text(parseInt($("#count").text(), 10) + 1);
+            }
+            else if ($("#followbutton").text() == 'Unfollow') {
+              $("#followbutton").text('Follow');
+              $("#followbutton").addClass('btn-success').removeClass('btn-danger');
+              $("#count").text(parseInt($("#count").text(), 10) - 1);
+            }
+          },
+          error: function (response) {
+            console.log(response);
+          }
+        });
+      });
+    });
+  </script>
+  <script th:inline="javascript">
+    $(document).ready(function () {
+      $('#forgotpassword').submit(function (e) {
+        e.preventDefault();
+        var user = new Object();
+        user.email = $('#email').val();
+        console.log($('#email').val());
+        $.ajax({
+          type: 'POST',
+          url: '/forgotpassword',
+          data: JSON.stringify(user),
+          dataType: 'json',
+          contentType: 'application/json; charset=utf-8',
+          success: function (response) {
+            if (response.response == 'ERROR') {
+              alert('Error');
+            }
+            else {
+              alert('Email sent');
+            }
+          },
+          error: function (response) {
+            console.log(response);
+          }
+        });
+      });
+    });
+  </script>
+</head>
+
+<body data-spy="scroll" data-target=".navbar" data-offset="50" style="background-color: white;">
+    <header>
+        <nav class="navbar navbar-expand-md navbar-light fixed-top">
+          <a class="navbar-brand" href="/">Hemlock</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item active dropdown">
+                <a class="nav-link active dropdown-toggle" id="dropdown01" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true"
+                  aria-expanded="false">Movies</a>
+                <div class="dropdown-menu" aria-labelledby="dropdown01">
+                  <a class="dropdown-item" href="/movies/opening">Opening This Week</a>
+                  <a class="dropdown-item" href="/movies/comingsoon">Coming Soon</a>
+                  <a class="dropdown-item" href="/movies/boxoffice">Top Box Office</a>
+                  <a class="dropdown-item" href="/movies/rated?page=1">Highest Rated</a>
+                  <a class="dropdown-item" href="/movies/awardwinners?page=1">Award Winners</a>
+                </div>
+              </li>
+              <li class="nav-item active dropdown">
+                <a class="nav-link active dropdown-toggle" id="dropdown02" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true"
+                  aria-expanded="false">TV Shows</a>
+                <div class="dropdown-menu" aria-labelledby="dropdown02">
+                  <a class="dropdown-item" href="/tv/newtv">New TV Shows Tonight</a>
+                  <a class="dropdown-item" href="/tv/rated?page=1">Top Rated</a>
+                  <a class="dropdown-item" href="/tv/fresh">Certified Fresh</a>
+                </div>
+              </li>
+              <li style="margin-left: 50px;">
+                <form action="/search" th:action="@{/search}" method="post" class="form-inline my-2 my-lg-0" th:object="${queryOption}">
+                  <select th:field="*{dropdown}" style="margin-right: 8px;">
+                    <option th:value="All">All</option>
+                    <option th:value="Movie">Movies</option>
+                    <option th:value="TV">TV Shows</option>
+                    <option th:value="Actor">Celebrities</option>
+                  </select>
+                  <input name="query" th:field="*{query}" class="form-control mr-sm-2" type="text" placeholder="Search" style="width: 500px"
+                    required>
+                  <button class="btn btn-outline my-2 my-sm-0" type="submit">
+                    <img class="img-responsive" src="images\search-icon.png">
+                  </button>
+                </form>
+              </li>
+            </ul>
+            <div th:if="${loggedin.username == null}">
+              <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                  <a class="dropdown-toggle" href="#" data-toggle="dropdown">Log In
+                    <strong class="caret"></strong>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-right" style="padding: 15px; padding-bottom: 15px;">
+                    <form action="/login" th:action="@{/login}" th:object="${user}" method="post" accept-charset="UTF-8">
+                      <input id="user_username" style="margin-bottom: 15px;padding-left: 5px" type="text" name="user[username]" placeholder="Username"
+                        th:field="*{username}" size="30" />
+                      <input id="user_password" style="margin-bottom: 15px;padding-left: 5px" type="password" name="user[password]" placeholder="Password"
+                        th:field="*{password}" size="30" />
+                      <label style="display: inline-block; margin-right: 50px;" for="user_remember_me">
+                        <input type="checkbox"> Remember me
+                      </label>
+                      <br>
+                      <div class="container">
+                        <div class="row">
+                          <div class="col-12">
+                            <input class="btn btn-primary" style="clear: left; width: 100%; height: 32px; font-size: 13px; margin-bottom: 10px;" type="submit"
+                              name="commit" value="Log In" />
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-4">
+                            <a class="btn btn-success" href="/register" style=" display: inline-block; clear: right; height: 32px; font-size: 13px;"
+                              type="submit">Sign up</a>
+                          </div>
+                          <div class="col-8">
+                            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModalCenter" style=" display: inline-block; clear: right; height: 32px; font-size: 13px;width: 100%;">Forgot Password?
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div th:if="${loggedin.username != null}">
+              <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                  <a class="dropdown-toggle" href="#" data-toggle="dropdown" style="padding-left: 8px;text-decoration: none;">
+                    <div class="media p-1 float-left">
+                      <img th:if="${loggedin.picture}==null" src="images/profile.png" class="mr-1 mt-1 rounded-circle" style="width:30px;" />
+                      <img th:if="${loggedin.picture}!=null" th:src="@{'data:image/jpeg;base64,'+${loggedin.picture64}}" class="mr-1 mt-1 rounded-circle"
+                        style="width:30px;" />
+                    </div>
+                    <div th:text="${loggedin.username}" style="display: inline-block; text-align: center;vertical-align: middle;line-height: 40px;"></div>
+                    <strong class="caret"></strong>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-right" style="padding: 15px; width: 190px;">
+                    <div class="row">
+                      <div class="col-5">
+                        <div class="media p-1 float-left">
+                          <img th:if="${loggedin.picture}==null" src="images/profile.png" class="mr-1 mt-1 rounded-circle" style="width:60px;" />
+                          <img th:if="${loggedin.picture}!=null" th:src="@{'data:image/jpeg;base64,'+${loggedin.picture64}}" class="mr-1 mt-1 rounded-circle"
+                            style="width:60px;" />
+                        </div>
+                      </div>
+                      <div class="col-7">
+                        <div style="padding:5px; width: 100%;">
+                          <a th:href="@{/user(username=${loggedin.username})}+'#watchlist'" style="font-size:15px; color:green">
+                            <b>Watchlist</b>
+                          </a>
+                          <a th:href="@{/user(username=${loggedin.username})}+'#blacklist'" style="font-size:15px; color:red">
+                            <b>Blacklist</b>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                    <a th:href="@{/user(username=${loggedin.username})}" style="text-decoration: none;">Profile</a>
+                    <br>
+                    <a href="/account" style="text-decoration: none;">Account Settings</a>
+                    <br>
+                    <div class="dropdown-divider"></div>
+                    <form action="/logout" method="post">
+                      <input class="btn btn-danger" style="clear: left; width: 100%; height: 32px; font-size: 13px;" type="submit" name="commit"
+                        value="Log Out" />
+                    </form>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Reset Password</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <input id="email" type="text" class="form-control" placeholder="Enter email">
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <form id="forgotpassword" method="POST">
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+  <main role="main" style="margin-top:100px;">
+    <div class="row" style="width: 99vw;">
+      <div class="col-2" style="margin-left:50px;margin-right:50px;">
+        <div class="card">
+          <img th:if="${user.picture64}!=null" th:src="@{'data:image/jpeg;base64,'+${user.picture64}}" id="ProfilePic" alt="Avatar"
+            style="width:100%" />
+          <img th:if="${user.picture64}==null" src="/images/profile.png" id="ProfilePic" alt="Avatar" style="width:100%" />
+          <button class="btn btn-info" id='edit' th:if="${loggedin.username}==${user.username}">Edit Profile Picture</button>
+          <div class="modal fade" id="picModal">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title">Upload</h4>
+                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                  <table>
+                    <tr>
+                      <td>File to upload:</td>
+                      <td>
+                        <input type="file" name="file" id="fileLoader" onchange="loadFile(event)" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                      <td>
+                        <input type="button" id="fileSubmit" value="Upload" />
+                      </td>
+                    </tr>
+                    <img id="pic" width="500" height="500" />
+                    <script>
+                      var loadFile = function (event) {
+                        var pic = document.getElementById('pic');
+                        pic.src = URL.createObjectURL(event.target.files[0]);
+                      };
+                    </script>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title" th:text="${user.username}"></h3>
+            <p th:text="${user.bio}" th:if="${user.bio}!=null"></p>
+          </div>
+        </div>
+        <center style="margin-top:15px;">
+          <a href="/account" style="color:blue;" th:if="${loggedin.username}==${user.username}">Manage Account</a>
+          <br>
+          <hr>
+          <h1 id="count" th:text="${message.message}"></h1>
+          <h4>Follower Count</h4>
+          <form id="follow" method="POST" th:if="${loggedin.username}!=null and ${loggedin.username}!=${user.username}">
+            <button class="btn btn-success" id="followbutton" type="submit" th:if="!${follow.followBool}">Follow</button>
+            <button class="btn btn-danger" id="followbutton" type="submit" th:if="${follow.followBool}">Unfollow</button>
+          </form>
+        </center>
+      </div>
+      <div class="col-9">
+        <div class="row">
+          <div class="col-12">
+            <ul class="nav nav-tabs nav-fill" style="margin-bottom: 20px;">
+              <li class="nav-item">
+                <a class="nav-link active" id="summary-tab" data-toggle="tab" href="#summary" role="tab" aria-controls="summary" aria-selected="true">Followers/Following</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="myreviews-tab" data-toggle="tab" href="#myreviews" role="tab" aria-controls="myreviews" aria-selected="false">My Reviews</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="watchlist-tab" data-toggle="tab" href="#watchlist" role="tab" aria-controls="watchlist" aria-selected="false">Watchlist</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="blacklist-tab" data-toggle="tab" href="#blacklist" role="tab" aria-controls="blacklist" aria-selected="false">Blacklist</a>
+              </li>
+            </ul>
+            <div class="tab-content" id="myTabContent">
+              <div class="tab-pane fade show active" id="summary" role="tabpanel" aria-labelledby="summary-tab">
+                <div class="row">
+                  <div class="col-6" style="border-right:1px solid gray">
+                    <center>
+                      <h5>My Followers</h5>
+                      <p th:if="${followerSize}==0">You have no followers!</p>
+                    </center>
+                    <ul class="list-unstyled" th:if="${followerSize}>0">
+                      <li class="media mt-2" th:each="follower: ${followers}" th:if="${followerSize}>0">
+                        <img th:if="${follower.picture64}==null" src="../images/profile.png" th:alt="${follower.username}" class="align-self-start mr-3 mt-3 rounded-circle"
+                          style="width:60px;" />
+                        <img th:if="${follower.picture64}!=null" th:src="@{'data:image/jpeg;base64,'+${follower.picture64}}" th:alt="${follower.username}"
+                          class="align-self-start mr-3 mt-3 rounded-circle" style="width:60px;" />
+                        <div class="media-body">
+                            <h5 class="mt-1 mb-0">
+                                <a th:href="@{/user(username=${follower.username})}" th:text="${follower.username}"></a>
+                              </h5>
+                          <p th:if="${follower.bio}!=null" th:text="'Bio: '+ ${follower.bio}"></p>
+                          <p th:if="${follower.bio}==null">Bio: none</p>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="col-6">
+                    <center>
+                      <h5>People I'm Following</h5>
+                      <p th:if="${followingSize}==0">You have not followed anyone!</p>
+                    </center>
+                    <ul class="list-unstyled" th:if="${followingSize}>0">
+                      <li class="media mt-2" th:each="followee: ${following}" th:if="${followingSize}>0">
+                        <img th:if="${followee.picture64}==null" src="../images/profile.png" th:alt="${followee.username}" class="align-self-start mr-3 mt-3 rounded-circle"
+                          style="width:60px;" />
+                        <img th:if="${followee.picture64}!=null" th:src="@{'data:image/jpeg;base64,'+${followee.picture64}}" th:alt="${followee.username}"
+                          class="align-self-start mr-3 mt-3 rounded-circle" style="width:60px;" />
+                        <div class="media-body">
+                          <h5 class="mt-1 mb-0">
+                              <a th:href="@{/user(username=${followee.username})}" th:text="${followee.username}"></a>
+                            </h5>
+                          <p th:if="${followee.bio}!=null" th:text="'Bio: '+ ${followee.bio}"></p>
+                          <p th:if="${followee.bio}==null">Bio: none</p>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="myreviews" role="tabpanel" aria-labelledby="myreviews-tab">
+                <center>
+                  <h5>Rating History</h5>
+                </center>
+                <div class="row">
+                  <div class="col-6" style="border-right:1px solid gray">
+                    <center>
+                      <h5>Review - Movies</h5>
+                      <p th:if="${reviewSize}==0 and ${loggedin.username}==${user.username}">You have not reviewed anything!</p>
+                      <p th:if="${reviewSize}==0 and ${loggedin.username}!=${user.username}" th:text="${user.username}+ ' has not reviewed anything!'"></p>
+                      <ul class="list-group" style="margin-top:20px;" th:if="${reviewSize}>0">
+                        <li class="list-group-item" th:each="review: ${review}">
+                          <div class="row">
+                            <div class="col-12">
+                              <div class="media p-3">
+                                <a th:href="@{/movie(id=${review.movieId})}">
+                                  <img th:src="'images/Movies/'+${review.movieId}+'/poster.jpg'" class="align-self-start mr-3 mt-3" style="width:60px;" />
+                                </a>
+                                <div class="media-body">
+                                  <div class="row">
+                                    <div class="col-9">
+                                      <h4>
+                                        <a th:text="${review.movieTitle}" th:href="@{/movie(id=${review.movieId})}"></a>
+                                      </h4>
+                                    </div>
+                                    <div class="col-3">
+                                      <p th:text="${review.rating}+'/5 stars'"></p>
+                                    </div>
+                                  </div>
+                                  <p th:text="${review.body}"></p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </li>
+                      </ul>
+                    </center>
+                  </div>
+                  <div class="col-6">
+                    <center>
+                      <h5>Review - TV</h5>
+                      <p th:if="${reviewTvSize}==0 and ${loggedin.username}==${user.username}">You have not reviewed anything!</p>
+                      <p th:if="${reviewTvSize}==0 and ${loggedin.username}!=${user.username}" th:text="${user.username}+ ' has not reviewed anything!'"></p>
+                      <ul class="list-group" style="margin-top:20px;overflow-y: scroll;" th:if="${reviewTvSize}>0">
+                        <li class="list-group-item" th:each="review: ${reviewTv}">
+                          <div class="row">
+                            <div class="col-12">
+                              <div class="media p-3">
+                                <a th:text="${review.tvTitle}" th:href="@{/movie(id=${review.tvId})}">
+                                  <img th:src="'images/TVShows/'+${review.tvId}+'/poster.jpg'" class="align-self-start mr-3 mt-3" style="width:60px;" />
+                                </a>
+                                <div class="media-body">
+                                  <div class="row">
+                                    <div class="col-5">
+                                      <h4>
+                                        <a th:text="${review.tvTitle}" th:href="@{/movie(id=${review.tvId})}"></a>
+                                      </h4>
+                                    </div>
+                                    <div class="col-5">
+                                      <p th:each="time : ${timesTv}" th:if="${time.personName}==${review.username}" th:text="'Posted on '+${time.bio}"></p>
+                                    </div>
+                                    <div class="col-2">
+                                      <p th:text="${review.rating}+'/5 stars'"></p>
+                                    </div>
+                                  </div>
+                                  <p th:text="${review.body}"></p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </li>
+                      </ul>
+                    </center>
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="watchlist" role="tabpanel" aria-labelledby="watchlist-tab">
+                <div class="row">
+                  <div class="col-6" style="border-right:1px solid gray">
+                    <center>
+                      <h5>Watch List - Movies</h5>
+                      <p th:if="${watchlistSize}==0 and ${loggedin.username}==${user.username}">You have not added anything to your Watch List!</p>
+                      <p th:if="${watchlistSize}==0 and ${loggedin.username}!=${user.username}" th:text="${user.username}+ ' has added anything to their Watch List!'"></p>
+                      <ul class="list-group" style="margin-top:20px;height:500px;overflow-y: scroll;" th:if="${watchlistSize}>0">
+                        <li class="list-group-item" th:each="movie : ${watchlist}">
+                          <div class="row">
+                            <div class=col-5>
+                              <div class="image-cropper-square poster">
+                                <p>
+                                  <a th:href="@{/movie(id=${movie.id})}">
+                                    <img th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" class="pSize" alt="Top Rated">
+                                  </a>
+                                </p>
+                              </div>
+                            </div>
+                            <div class="col-7" style="text-align: center;">
+                              <a th:href="@{/movie(id=${movie.id})}">
+                                <h4 th:text="${movie.title}"></h4>
+                              </a>
+                              <a th:if="${movie.avgRating}!=null" th:text="'Rating: ' + ${movie.avgRating}+'%'"></a>
+                              <a th:if="${movie.avgRating}==null">Rating: –</a>
+                              <br>
+                              <a th:if="(${movie.boxOffice}>=100000)" th:text="'Box Office: $' +${#numbers.formatDecimal(movie.boxOffice/1000000.0,1,2)}+'M'"></a>
+                              <a th:if="(${movie.boxOffice}<100000 and ${movie.boxOffice}>=1000)" th:text="'Box Office: $' +${#numbers.formatDecimal(movie.boxOffice/1000.0,1,2)}+'k'"></a>
+                              <a th:if="(${movie.boxOffice}<1000 and ${movie.boxOffice}>0)" th:text="'$'+${movie.boxOffice}"></a>
+                              <a th:if="(${movie.boxOffice}==0)">No Box Office</a>
+                              <br>
+                              <a th:if="${movie.runtime}!=null" th:text="'Runtime: '+ ${movie.runtime}"></a>
+                              <br>
+                            </div>
+                          </div>
+                        </li>
+                      </ul>
+                    </center>
+                  </div>
+                  <div class="col-6">
+                    <center>
+                      <h5>Watch List - TV</h5>
+                      <p th:if="${watchlistTvSize}==0 and ${loggedin.username}==${user.username}">You have not added anything to your Watch List!</p>
+                      <p th:if="${watchlistTvSize}==0 and ${loggedin.username}!=${user.username}" th:text="${user.username}+ ' has added anything to their Watch List!'"></p>
+                      <ul class="list-group" style="margin-top:20px;height:500px;overflow-y: scroll;" th:if="${watchlistTvSize}>0">
+                        <li class="list-group-item" th:each="tv : ${watchlistTv}">
+                          <div class="row">
+                            <div class=col-5>
+                              <div class="image-cropper-square poster">
+                                <p>
+                                  <a th:href="@{/tv(id=${tv.id})}">
+                                    <img th:src="'images/TVShows/'+${tv.id}+'/poster.jpg'" class="pSize" alt="Top Rated">
+                                  </a>
+                                </p>
+                              </div>
+                            </div>
+                            <div class="col-7" style="text-align: center;">
+                              <a th:href="@{/tv(id=${tv.id})}">
+                                <h4 th:text="${tv.title}"></h4>
+                              </a>
+                              <a th:if="${tv.avgRating}!=null" th:text="'Rating: ' + ${tv.avgRating}"></a>
+                              <a th:if="${tv.avgRating}==null">Rating: –</a>
+                              <br>
+                              <a th:text="'Seasons: '+ ${tv.seasons}"></a>
+                              <br>
+                              <a th:text="'Premiere Date: '+ ${#strings.toString(tv.releaseDate).substring(0,10)}"></a>
+                              <br>
+                            </div>
+                          </div>
+                        </li>
+                      </ul>
+                    </center>
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="blacklist" role="tabpanel" aria-labelledby="blacklist-tab">
+                <div class="row">
+                  <div class="col-6" style="border-right:1px solid gray">
+                    <center>
+                      <h5>Black List - Movies</h5>
+                      <p th:if="${blacklistSize}==0 and ${loggedin.username}==${user.username}">You have not added anything to your Black List!</p>
+                      <p th:if="${blacklistSize}==0 and ${loggedin.username}!=${user.username}" th:text="${user.username}+ ' has added anything to their Black List!'"></p>
+                      <ul class="list-group" style="margin-top:20px;height:500px;overflow-y: scroll;" th:if="${blacklistSize}>0">
+                        <li class="list-group-item" th:each="movie : ${blacklist}">
+                          <div class="row">
+                            <div class=col-5>
+                              <div class="image-cropper-square poster">
+                                <p>
+                                    <a th:href="@{/movie(id=${movie.id})}">
+                                  <img th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" class="pSize" alt="Top Rated">
+                                  </a>
+                                </p>
+                              </div>
+                            </div>
+                            <div class="col-7" style="text-align: center;">
+                                <a th:href="@{/movie(id=${movie.id})}">
+                                  <h4 th:text="${movie.title}"></h4>
+                                </a>
+                                <a th:if="${movie.avgRating}!=null" th:text="'Rating: ' + ${movie.avgRating}+'%'"></a>
+                                <a th:if="${movie.avgRating}==null">Rating: –</a>
+                                <br>
+                                <a th:if="(${movie.boxOffice}>=100000)" th:text="'Box Office: $' +${#numbers.formatDecimal(movie.boxOffice/1000000.0,1,2)}+'M'"></a>
+                                <a th:if="(${movie.boxOffice}<100000 and ${movie.boxOffice}>=1000)" th:text="'Box Office: $' +${#numbers.formatDecimal(movie.boxOffice/1000.0,1,2)}+'k'"></a>
+                                <a th:if="(${movie.boxOffice}<1000 and ${movie.boxOffice}>0)" th:text="'$'+${movie.boxOffice}"></a>
+                                <a th:if="(${movie.boxOffice}==0)">No Box Office</a>
+                                <br>
+                                <a th:if="${movie.runtime}!=null" th:text="'Runtime: '+ ${movie.runtime}"></a>
+                                <br>
+                              </div>
+                          </div>
+                        </li>
+                      </ul>
+                    </center>
+                  </div>
+                  <div class="col-6">
+                    <center>
+                      <h5>Black List - TV</h5>
+                      <p th:if="${blacklistTvSize}==0 and ${loggedin.username}==${user.username}">You have not added anything to your Black List!</p>
+                      <p th:if="${blacklistTvSize}==0 and ${loggedin.username}!=${user.username}" th:text="${user.username}+ ' has added anything to their Black List!'"></p>
+                      <ul class="list-group" style="margin-top:20px;height:500px;overflow-y: scroll;" th:if="${blacklistTvSize}>0">
+                        <li class="list-group-item" th:each="tv : ${blacklistTv}">
+                          <div class="row">
+                            <div class=col-5>
+                              <div class="image-cropper-square poster">
+                                  <p>
+                                      <a th:href="@{/tv(id=${tv.id})}">
+                                        <img th:src="'images/TVShows/'+${tv.id}+'/poster.jpg'" class="pSize" alt="Top Rated">
+                                      </a>
+                                    </p>
+                              </div>
+                            </div>
+                            <div class="col-7" style="text-align: center;">
+                              <a th:href="@{/tv(id=${tv.id})}">
+                                <h4 th:text="${tv.title}"></h4>
+                              </a>
+                              <a th:if="${tv.avgRating}!=null" th:text="'Rating: ' + ${tv.avgRating}"></a>
+                              <a th:if="${tv.avgRating}==null">Rating: –</a>
+                              <br>
+                              <a th:text="'Seasons: '+ ${tv.seasons}"></a>
+                              <br>
+                              <a th:text="'Premiere Date: '+ ${#strings.toString(tv.releaseDate).substring(0,10)}"></a>
+                              <br>
+                            </div>
+                          </div>
+                        </li>
+                      </ul>
+                    </center>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="container">
+        <br>
+        <br>
+        <p class="float-right">
+          <a href="#">Back to top</a>
+        </p>
+        <p>&copy; 2018 Hemlock, Inc. &middot;
+          <a href="/terms">Terms and Conditions</a> &middot;
+          <a href="/about">About Us</a> &middot;
+          <a href="/contact">Contact Us</a> &middot;
+          <a href="/help">Help</a> &middot;
+          <a href="https://www.facebook.com/Hemlock-225751531511551/">
+            <img src="images/facebook.png">
+          </a>
+          <a href="https://twitter.com/308Hemlock">
+            <img src="images/twitter.png">
+          </a>
+          <a href="mailto:hemlockcse308@gmail.com">
+            <img src="images/gmail.png">
+          </a>
+        </p>
+      </footer>
+
+  </main>
+  <script> 
+    var files = [];
+    $(document).on("change", "#fileLoader", function (event) {
+      files = event.target.files;
+    });
+
+    $(document).on("click", "#fileSubmit", function () {
+      processUpload();
+    });
+
+    function processUpload() {
+      var myForm = new FormData();
+      myForm.append("file", files[0]);
+      $
+        .ajax({
+          dataType: 'json',
+          url: "/user/upload",
+          data: myForm,
+          type: "POST",
+          enctype: 'multipart/form-data',
+          processData: false,
+          contentType: false,
+          success: function (result) {
+            alert(result.response);
+            if (result.response == "OK") {
+              $('#ProfilePic').attr('src', $('#pic').attr('src'));
+              $('#ddpic').attr('src', $('#pic').attr('src'));
+              $('#ddpic2').attr('src', $('#pic').attr('src'));
+              $('#picModal').modal('hide');
+            }
+          },
+          error: function (result) {
+            alert(result.response);
+          }
+        });
+    }
+  </script>
+</body>
