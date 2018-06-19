@@ -557,7 +557,7 @@
             <ul class="list-unstyled" hidden id="Tname">
               <li class="media mb-2" th:each="tv : ${displayTname}" th:if="${tvStat.index}<12">
                 <a th:href="@{/tv(id=${tv.id})}">
-                  <img class="mr-3 poster" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${tv.title}">
+                  <img class="mr-3 poster" th:src="'images/TV/'+${tv.id}+'/poster.jpg'" th:alt="${tv.title}">
                 </a>
                 <div class="media-body">
                   <h5 class="mt-0 mb-1">
@@ -583,7 +583,7 @@
             <ul class="list-unstyled" hidden id="Trate">
               <li class="media mb-2" th:each="tv : ${displayTrate}" th:if="${tvStat.index}<12">
                 <a th:href="@{/tv(id=${tv.id})}">
-                  <img class="mr-3 poster" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${tv.title}">
+                  <img class="mr-3 poster" th:src="'images/TV/'+${tv.id}+'/poster.jpg'" th:alt="${tv.title}">
                 </a>
                 <div class="media-body">
                   <h5 class="mt-0 mb-1">
@@ -609,7 +609,7 @@
             <ul class="list-unstyled" hidden id="Tdate">
               <li class="media mb-2" th:each="tv : ${displayTdate}" th:if="${tvStat.index}<12">
                 <a th:href="@{/tv(id=${tv.id})}">
-                  <img class="mr-3 poster" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${tv.title}">
+                  <img class="mr-3 poster" th:src="'images/TV/'+${tv.id}+'/poster.jpg'" th:alt="${tv.title}">
                 </a>
                 <div class="media-body">
                   <h5 class="mt-0 mb-1">
@@ -646,7 +646,7 @@
             <ul class="list-unstyled" id="P">
               <li class="media mb-2" th:each="person : ${displayP}" th:if="${personStat.index}<12">
                 <a th:href="@{/actor(id=${person.id})}">
-                  <img class="mr-3 poster" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${person.personName}">
+                  <img class="mr-3 poster" th:src="'images/Person/'+${person.id}+'/poster.jpg'" th:alt="${person.personName}">
                 </a>
                 <div class="media-body">
                   <h5 class="mt-0 mb-1">
@@ -659,7 +659,7 @@
             <ul class="list-unstyled" hidden id="Pname">
               <li class="media mb-2" th:each="person : ${displayPname}" th:if="${personStat.index}<12">
                 <a th:href="@{/actor(id=${person.id})}">
-                  <img class="mr-3 poster" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${person.personName}">
+                  <img class="mr-3 poster" th:src="'images/Person/'+${person.id}+'/poster.jpg'" th:alt="${person.personName}">
                 </a>
                 <div class="media-body">
                   <h5 class="mt-0 mb-1">
@@ -846,7 +846,7 @@
               <div class="col-3" th:each="tv : ${displayT}" th:if="${tvStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
                 <div class="card" style="margin-bottom:20px;">
                   <a th:href="@{/tv(id=${tv.id})}">
-                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${tv.title}">
+                    <img class="card-img-top" th:src="'images/TV/'+${tv.id}+'/poster.jpg'" th:alt="${tv.title}">
                   </a>
                   <div class="card-body">
                     <a th:href="@{/tv(id=${tv.id})}">
@@ -866,7 +866,7 @@
               <div class="col-3" th:each="tv : ${displayTname}" th:if="${tvStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
                 <div class="card" style="margin-bottom:20px;">
                   <a th:href="@{/tv(id=${tv.id})}">
-                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${tv.title}">
+                    <img class="card-img-top" th:src="'images/TV/'+${tv.id}+'/poster.jpg'" th:alt="${tv.title}">
                   </a>
                   <div class="card-body">
                     <h5 class="card-title" style="white-space: nowrap;overflow: hidden;">
@@ -884,7 +884,7 @@
               <div class="col-3" th:each="tv : ${displayTrate}" th:if="${tvStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
                 <div class="card" style="margin-bottom:20px;">
                   <a th:href="@{/tv(id=${tv.id})}">
-                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${tv.title}">
+                    <img class="card-img-top" th:src="'images/TV/'+${tv.id}+'/poster.jpg'" th:alt="${tv.title}">
                   </a>
                   <div class="card-body">
                     <h5 class="card-title" style="white-space: nowrap;overflow: hidden;">
@@ -902,7 +902,7 @@
               <div class="col-3" th:each="tv : ${displayTdate}" th:if="${tvStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
                 <div class="card" style="margin-bottom:20px;">
                   <a th:href="@{/tv(id=${tv.id})}">
-                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${tv.title}">
+                    <img class="card-img-top" th:src="'images/TV/'+${tv.id}+'/poster.jpg'" th:alt="${tv.title}">
                   </a>
                   <div class="card-body">
                     <h5 class="card-title" style="white-space: nowrap;overflow: hidden;">
@@ -931,7 +931,7 @@
               <div class="col-3" th:each="person : ${displayP}" th:if="${personStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
                 <div class="card" style="margin-bottom:20px;">
                   <a th:href="@{/actor(id=${person.id})}">
-                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${person.personName}">
+                    <img class="card-img-top" th:src="'images/Person/'+${person.id}+'/poster.jpg'" th:alt="${person.personName}">
                   </a>
                   <div class="card-body" style="height: 175px;">
                     <h5 class="card-title" style="white-space: nowrap;overflow: hidden;">
@@ -951,7 +951,7 @@
               <div class="col-3" th:each="person : ${displayPname}" th:if="${personStat.index}<12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px;">
                 <div class="card" style="margin-bottom:20px;">
                   <a th:href="@{/actor(id=${person.id})}">
-                    <img class="card-img-top" th:src="'images/Movies/'+${movie.id}+'/poster.jpg'" th:alt="${person.personName}">
+                    <img class="card-img-top" th:src="'images/Person/'+${person.id}+'/poster.jpg'" th:alt="${person.personName}">
                   </a>
                   <div class="card-body" style="height: 175px;">
                     <h5 class="card-title" style="white-space: nowrap;overflow: hidden;">
